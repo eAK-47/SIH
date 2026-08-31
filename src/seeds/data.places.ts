@@ -32,10 +32,10 @@ export interface SeedProfile {
 }
 
 export const places: SeedPlace[] = [
-  { id: '11111111-1111-1111-1111-111111111101', name: 'Clafouti Beach Restaurant',     entityType: 'RESTAURANT', lat: 8.7333,  lng: 76.7166, address: 'North Cliff, Varkala, Kerala 695141',    verificationStatus: 'VERIFIED' },
-  { id: '11111111-1111-1111-1111-111111111102', name: 'Darjeeling Café',               entityType: 'RESTAURANT', lat: 8.7347,  lng: 76.7153, address: 'Cliff Rd, Varkala, Kerala 695141',       verificationStatus: 'TRUSTED'  },
-  { id: '11111111-1111-1111-1111-111111111103', name: 'Varkala Marine Palace Hotel',    entityType: 'HOTEL',      lat: 8.7329,  lng: 76.7171, address: 'Temple Junction, Varkala, Kerala 695141', verificationStatus: 'VERIFIED' },
-  { id: '11111111-1111-1111-1111-111111111104', name: 'Rajesh Auto Stand - Varkala',    entityType: 'TRANSPORT',  lat: 8.7322,  lng: 76.7195, address: 'Varkala Railway Stn, Kerala 695141',     verificationStatus: 'UNVERIFIED' },
+  { id: '11111111-1111-1111-1111-111111111101', name: 'Amritham Traditional Meals',     entityType: 'RESTAURANT', lat: 9.0925,  lng: 76.5178, address: 'Amritapuri Road, Vallikavu, Kerala 690546',    verificationStatus: 'VERIFIED' },
+  { id: '11111111-1111-1111-1111-111111111102', name: 'Darjeeling Café & Bakery',               entityType: 'RESTAURANT', lat: 9.0930,  lng: 76.5182, address: 'Near Footbridge, Vallikavu, Kerala 690546',       verificationStatus: 'TRUSTED'  },
+  { id: '11111111-1111-1111-1111-111111111103', name: 'Alumkadavu Backwater Country Boats',    entityType: 'GUIDE',      lat: 9.0831,  lng: 76.5342, address: 'Alumkadavu Boat Jetty, Karunagappally, Kerala', verificationStatus: 'UNVERIFIED' },
+  { id: '11111111-1111-1111-1111-111111111104', name: 'Vallikavu Junction Auto Stand',    entityType: 'TRANSPORT',  lat: 9.0912,  lng: 76.5185, address: 'Vallikavu Junction, Clappana, Kerala 690546',     verificationStatus: 'VERIFIED' },
   { id: '11111111-1111-1111-1111-111111111105', name: 'Varkala Heritage Walking Tours', entityType: 'GUIDE',      lat: 8.7340,  lng: 76.7160, address: 'Papanasam Beach, Varkala 695141',        verificationStatus: 'VERIFIED' },
   { id: '22222222-2222-2222-2222-222222222201', name: 'Martins Corner',                 entityType: 'RESTAURANT', lat: 15.2832, lng: 73.9862, address: 'Betalbatim, Salcete, Goa 403713',        verificationStatus: 'TRUSTED'  },
   { id: '22222222-2222-2222-2222-222222222202', name: 'Curlies Beach Shack',            entityType: 'RESTAURANT', lat: 15.5549, lng: 73.7423, address: 'Anjuna Beach, Bardez, Goa 403509',        verificationStatus: 'FLAGGED'  },

@@ -61,10 +61,55 @@ RETURN ONLY JSON. Return structure:
 
 export async function generateAdvisory(
   context: AdvisoryContext
-): Promise<AdvisoryPayload | null> {
+): Promise<AdvisoryPayload> {
+  const fallbackAdvisory = (): AdvisoryPayload => {
+    const isFlagged = context.verificationStatus === 'FLAGGED';
+    const score = context.safetyScore ?? 75;
+    
+    let riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW';
+    if (isFlagged || score < 60) riskLevel = 'HIGH';
+    else if (score < 75) riskLevel = 'MEDIUM';
+
+    const things_to_know = [];
+    if (context.verificationStatus === 'UNVERIFIED') {
+      things_to_know.push('This service provider has not been officially verified. Exercise standard caution.');
+    } else if (context.verificationStatus === 'FLAGGED') {
+      things_to_know.push('This provider has been flagged by multiple users. We advise avoiding negotiations if possible.');
+    }
+
+    const hasOutliers = context.priceObservations?.some(obs => (obs.outlierCount || 0) > 0);
+    if (hasOutliers) {
+      things_to_know.push('Community data indicates potential price spikes or overcharging based on recent reports.');
+    } else if (!isFlagged) {
+      things_to_know.push('Typically standard pricing confirmed by recent community reports.');
+    }
+
+    const typeLabel = 
+      context.entityType === 'RESTAURANT' ? 'dining spot' : 
+      context.entityType === 'HOTEL' ? 'accommodation' : 
+      context.entityType === 'GUIDE' ? 'tour guide service' : 'transport service';
+
+    const positive_highlights = [
+      `Local ${typeLabel} operating near ${context.address.split(',')[0]}.`,
+      `Currently maintaining a community safety score of ${score}/100.`,
+    ];
+
+    if (context.verificationStatus === 'VERIFIED' || context.verificationStatus === 'TRUSTED') {
+      positive_highlights.push(`Officially recognized as a ${context.verificationStatus.toLowerCase()} service by the tourism board.`);
+    }
+
+    return {
+      positive_highlights,
+      things_to_know: things_to_know.length > 0 ? things_to_know : ['No major issues reported. Practice standard safety precautions.'],
+      risk_level: riskLevel,
+      confidence_score: 0.85,
+      reasoning: "Synthesized via local statistical safety heuristics (offline fallback)."
+    };
+  };
+
   if (!openai) {
-    console.error("OpenAI not initialized");
-    return null;
+    console.warn("OpenAI not initialized, using local fallback heuristics.");
+    return fallbackAdvisory();
   }
 
   try {
@@ -92,25 +137,25 @@ Recent: ${JSON.stringify(context.recentTouristComments || [])}`;
     });
 
     const content = response.choices[0]?.message?.content;
-    if (!content) return null;
+    if (!content) return fallbackAdvisory();
 
     let parsed: any;
     try {
       parsed = JSON.parse(content);
       if (parsed.advisory) parsed = parsed.advisory;
     } catch {
-      return null;
+      return fallbackAdvisory();
     }
-    
+
     return {
-      positive_highlights: Array.isArray(parsed.positive_highlights) ? parsed.positive_highlights : [],
-      things_to_know: Array.isArray(parsed.things_to_know) ? parsed.things_to_know : [],
-      risk_level: typeof parsed.risk_level === 'string' && ['LOW','MEDIUM','HIGH'].includes(parsed.risk_level) ? parsed.risk_level : 'MEDIUM',
-      confidence_score: typeof parsed.confidence_score === 'number' ? parsed.confidence_score : 0.5,
-      reasoning: typeof parsed.reasoning === 'string' ? parsed.reasoning : ''
+      positive_highlights: Array.isArray(parsed.positive_highlights) ? parsed.positive_highlights : fallbackAdvisory().positive_highlights,
+      things_to_know: Array.isArray(parsed.things_to_know) ? parsed.things_to_know : fallbackAdvisory().things_to_know,
+      risk_level: (typeof parsed.risk_level === 'string' && ['LOW','MEDIUM','HIGH'].includes(parsed.risk_level)) ? parsed.risk_level : fallbackAdvisory().risk_level,
+      confidence_score: typeof parsed.confidence_score === 'number' ? parsed.confidence_score : fallbackAdvisory().confidence_score,
+      reasoning: typeof parsed.reasoning === 'string' ? parsed.reasoning : fallbackAdvisory().reasoning
     };
   } catch (error) {
-    console.error('AI Advisory generation error:', error);
-    return null;
+    console.warn('AI Advisory generation error, falling back to local heuristics:', error.message);
+    return fallbackAdvisory();
   }
 }
