@@ -1,0 +1,47 @@
+{
+  "name": "tourism-intelligence-platform",
+  "version": "1.0.0",
+  "description": "Tourism Intelligence & Trusted Local Services Platform - Part 1",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "seed": "tsx src/seeds/seed.ts",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "tourism",
+    "intelligence",
+    "postgis",
+    "pricing",
+    "spatial"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@fastify/cors": "^8.4.1",
+    "@fastify/env": "^4.3.0",
+    "@fastify/swagger": "^8.12.0",
+    "@fastify/swagger-ui": "^4.0.1",
+    "@prisma/client": "^5.7.1",
+    "dotenv": "^17.4.2",
+    "fastify": "^4.25.2",
+    "fastify-plugin": "^4.5.1",
+    "pg": "^8.11.3",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@types/pg": "^8.10.9",
+    "prisma": "^5.7.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
+  }
+}

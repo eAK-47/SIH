@@ -1,0 +1,68 @@
+// Prisma schema for Tourism Intelligence Platform
+// Note: PostGIS geography type requires raw SQL for some operations
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EntityType {
+  RESTAURANT
+  HOTEL
+  GUIDE
+  TRANSPORT
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  VERIFIED
+  TRUSTED
+  FLAGGED
+}
+
+model Place {
+  id                  String   @id @default(uuid())
+  name                String
+  entityType          EntityType
+  location            Unsupported("geography(Point, 4326)") // PostGIS geography type
+  address             String
+  verificationStatus  VerificationStatus @default(UNVERIFIED)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  priceObservations   PriceObservation[]
+  intelligenceProfile IntelligenceProfile?
+
+  @@index([entityType])
+  @@index([verificationStatus])
+}
+
+model PriceObservation {
+  id          String   @id @default(uuid())
+  placeId     String
+  place       Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  itemName    String
+  category    String
+  reportedPrice Decimal  @db.Decimal(10, 2)
+  isVerified  Boolean  @default(false)
+  recordedAt  DateTime @default(now())
+
+  @@index([placeId])
+  @@index([category])
+  @@index([recordedAt])
+}
+
+model IntelligenceProfile {
+  placeId          String   @id
+  place            Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  safetyScore      Decimal  @db.Decimal(4, 2) // 0.00 to 10.00
+  positiveHighlights String[] @default([]) @db.Text
+  thingsToKnow     String[] @default([]) @db.Text
+  confidenceLevel  Int      @default(50) // 0-100
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
