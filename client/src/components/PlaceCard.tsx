@@ -1,54 +1,89 @@
 import clsx from 'clsx';
 import type { PlaceSearchResult } from '../types/api';
-import { formatDistance, formatINR, entityTypeIcon, verificationBadge } from '../lib/format';
+import { formatDistance, verificationBadge } from '../lib/format';
 import { useAppStore } from '../store/useAppStore';
-import { SafetyBadge } from './SafetyBadge';
+import { getCategoryAccent, getDisplayCategory, CATEGORY_CONFIG } from '../lib/categoryConfig';
+import { } from './SafetyBadge';
+import { FairPriceBandModule } from './FairPriceBandModule';
+import { ThingsToKnow } from './ThingsToKnow';
+import { ShieldCheck, MapPin, Plus } from 'lucide-react';
 
 export function PlaceCard({ place }: { place: PlaceSearchResult }) {
-  const { selectedPlace, setSelectedPlace } = useAppStore();
+  const { selectedPlace, setSelectedPlace, setPopToken } = useAppStore();
   const isSelected = selectedPlace?.id === place.id;
   const badge = verificationBadge(place.verificationStatus);
+  const catAccent = getCategoryAccent(place.entityType);
+  const displayCat = CATEGORY_CONFIG[getDisplayCategory(place.entityType)];
+
+  const mainBand = place.fairPriceBands[0];
+  const advisoryMessages = place.intelligenceProfile?.thingsToKnow || [];
 
   return (
     <button
-      onClick={() => setSelectedPlace(isSelected ? null : place)}
+      onClick={() => {
+        setSelectedPlace(isSelected ? null : place);
+        setPopToken(null);
+      }}
       className={clsx(
-        'w-full rounded-xl border p-3 text-left transition',
+        'group w-full rounded-xl border p-4 text-left transition-all bg-white',
         isSelected
-          ? 'border-saffron bg-saffron/5 shadow-md'
-          : 'border-gray-200 bg-white shadow-sm hover:border-gray-300 hover:shadow'
+          ? 'border-brand-500 ring-1 ring-brand-500 shadow-card-hover'
+          : 'border-slate-200 shadow-card hover:border-slate-300 hover:shadow-card-hover'
       )}>
-      <div className="mb-1 flex items-start justify-between gap-2">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="text-base">{entityTypeIcon(place.entityType)}</span>
-            <span className="truncate text-sm font-bold text-gray-900">{place.name}</span>
+          <div className="flex items-center gap-2 mb-1">
+            <span className={clsx('rounded-full border border-current/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider', catAccent.bg, catAccent.color)}>
+              {displayCat.label}
+            </span>
+            {place.verificationStatus === 'VERIFIED' || place.verificationStatus === 'TRUSTED' ? (
+              <span className="flex items-center gap-0.5 text-[10px] font-bold text-brand-600">
+                <ShieldCheck className="h-3 w-3" /> Verified Presence
+              </span>
+            ) : null}
           </div>
-          <p className="mt-0.5 truncate text-xs text-gray-500">{place.address}</p>
+          <h3 className="truncate text-[15px] font-bold text-slate-900">{place.name}</h3>
+          <p className="mt-0.5 flex items-center gap-1 truncate text-[11px] font-medium text-slate-500">
+            <MapPin className="h-3 w-3 text-slate-400" />
+            {place.address}
+            {place.distanceMeters != null && (
+              <span className="ml-1 font-bold text-slate-700">— {formatDistance(place.distanceMeters)}</span>
+            )}
+          </p>
         </div>
-        <span className={clsx('shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium', badge.color)}>
+        <span className={clsx('shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold', badge.color)}>
           {badge.label}
         </span>
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-1.5">
-        {place.distanceMeters != null && (
-          <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
-            {formatDistance(place.distanceMeters)}
-          </span>
-        )}
-        {place.safetyTags.map((tag, i) => <SafetyBadge key={i} tag={tag} />)}
-      </div>
+      {/* Fair Price Band (USP) */}
+      {mainBand && <FairPriceBandModule band={mainBand} />}
 
-      {place.fairPriceBands.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {place.fairPriceBands.slice(0, 2).map((b, i) => (
-            <span key={i} className="rounded bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-700">
-              {b.itemName}: {formatINR(b.lowerBound)}-{formatINR(b.upperBound)}
+      {/* Positive Highlights Tags */}
+      {place.intelligenceProfile?.positiveHighlights && place.intelligenceProfile.positiveHighlights.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {place.intelligenceProfile.positiveHighlights.slice(0, 2).map((h, i) => (
+            <span key={i} className="rounded-full border border-brand-100 bg-brand-50/50 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
+              ✓ {h}
             </span>
           ))}
         </div>
       )}
+
+      {/* Things to Know Accordion */}
+      <ThingsToKnow messages={advisoryMessages} />
+
+      {/* Footer Action Row */}
+      <div className="mt-4 flex items-center justify-between gap-2">
+        <span className="text-[10px] font-bold text-slate-400 tracking-widest">
+          {place.safetyTags.length > 0 && place.safetyTags[0].label}
+        </span>
+        <span onClick={(e) => { e.stopPropagation(); setSelectedPlace(place); }} 
+              className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 transition hover:bg-slate-100">
+          <Plus className="h-3 w-3" /> Add Bill
+        </span>
+      </div>
     </button>
   );
 }

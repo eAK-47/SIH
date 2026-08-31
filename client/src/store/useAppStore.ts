@@ -18,13 +18,26 @@ interface AppState {
   categoryFilter: string | null;
   setCategoryFilter: (cat: string | null) => void;
 
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+
+  maxBudget: number | null;
+  setMaxBudget: (budget: number | null) => void;
+
+  verifiedOnly: boolean;
+  setVerifiedOnly: (val: boolean) => void;
+
+  excludeDiscrepancy: boolean;
+  setExcludeDiscrepancy: (val: boolean) => void;
+
   activeTab: 'tourist' | 'merchant';
   setActiveTab: (tab: 'tourist' | 'merchant') => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  userLat: 8.7333,
-  userLng: 76.7166,
+  // Vallikavu Bridge Coordinate default:
+  userLat: 9.0912,
+  userLng: 76.5185,
   setUserLocation: (lat, lng) => set({ userLat: lat, userLng: lng }),
 
   selectedPlace: null,
@@ -38,6 +51,18 @@ export const useAppStore = create<AppState>((set) => ({
 
   categoryFilter: null,
   setCategoryFilter: (cat) => set({ categoryFilter: cat }),
+
+  searchQuery: '',
+  setSearchQuery: (q) => set({ searchQuery: q }),
+
+  maxBudget: null,
+  setMaxBudget: (budget) => set({ maxBudget: budget }),
+
+  verifiedOnly: true,
+  setVerifiedOnly: (val) => set({ verifiedOnly: val }),
+
+  excludeDiscrepancy: false,
+  setExcludeDiscrepancy: (val) => set({ excludeDiscrepancy: val }),
 
   activeTab: 'tourist',
   setActiveTab: (tab) => set({ activeTab: tab }),

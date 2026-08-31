@@ -3,24 +3,40 @@ import { useAppStore } from '../store/useAppStore';
 import { searchPlaces } from '../lib/api';
 import { MapView } from '../components/MapView';
 import { PlaceCard } from '../components/PlaceCard';
-import { AdvisoryPanel } from '../components/AdvisoryPanel';
-import { PriceSubmitForm } from '../components/PriceSubmitForm';
-import { VerifyPoPModal } from '../components/VerifyPoPModal';
-import { PriceBandChart } from '../components/PriceBandChart';
-import { ShieldAlert, Loader2 } from 'lucide-react';
+import { CategoryChips } from '../components/CategoryChips';
+import { BudgetSlider } from '../components/BudgetSlider';
+import { FilterToggles } from '../components/FilterToggles';
+import { ResultsCounter } from '../components/ResultsCounter';
+import { SubmitBillModal } from '../components/SubmitBillModal';
+import { Loader2 } from 'lucide-react';
 
 export function TouristApp() {
-  const { userLat, userLng, places, setPlaces, selectedPlace, categoryFilter, setCategoryFilter } = useAppStore();
+  const { userLat, userLng, places, setPlaces, selectedPlace, categoryFilter, maxBudget, verifiedOnly, excludeDiscrepancy, searchQuery } = useAppStore();
   const [loading, setLoading] = useState(false);
-  const [showPopModal, setShowPopModal] = useState(false);
+  
+  // Track modal state
+  const [modalPlace, setModalPlace] = useState<{id: string, name: string} | null>(null);
 
   useEffect(() => {
     async function loadPlaces() {
       setLoading(true);
       try {
-        const res = await searchPlaces(userLat, userLng, 5000, categoryFilter || undefined);
+        const res = await searchPlaces(userLat, userLng, 5000, categoryFilter || undefined, maxBudget || undefined);
         if (res.success && res.data?.places) {
-          setPlaces(res.data.places);
+          let filtered = res.data.places;
+          
+          if (verifiedOnly) {
+            filtered = filtered.filter(p => p.verificationStatus === 'VERIFIED' || p.verificationStatus === 'TRUSTED');
+          }
+          if (excludeDiscrepancy) {
+            filtered = filtered.filter(p => !p.fairPriceBands.some(b => b.outlierCount > 0));
+          }
+          if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || p.address.toLowerCase().includes(q));
+          }
+
+          setPlaces(filtered);
         }
       } catch (error) {
         console.error('Failed to load places:', error);
@@ -29,95 +45,66 @@ export function TouristApp() {
       }
     }
     loadPlaces();
-  }, [userLat, userLng, categoryFilter, setPlaces]);
+  }, [userLat, userLng, categoryFilter, maxBudget, verifiedOnly, excludeDiscrepancy, searchQuery, setPlaces]);
+
+  // Make PlaceCard trigger our new Add Bill modal
+  useEffect(() => {
+    const handleAddBill = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('.add-bill-btn') && selectedPlace) {
+         setModalPlace({ id: selectedPlace.id, name: selectedPlace.name });
+      }
+    };
+    document.addEventListener('click', handleAddBill);
+    return () => document.removeEventListener('click', handleAddBill);
+  }, [selectedPlace]);
 
   return (
     <div className="flex h-full flex-col md:flex-row">
-      {/* LEFT: Layout with Places List */}
-      <div className="flex w-full flex-col border-r border-gray-200 bg-white md:w-[400px]">
-        {/* Filters */}
-        <div className="border-b border-gray-100 p-4">
-          <h2 className="mb-3 text-sm font-bold text-gray-800">Nearby Local Services</h2>
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {['ALL', 'RESTAURANT', 'HOTEL', 'GUIDE', 'TRANSPORT'].map(cat => {
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setCategoryFilter(cat === 'ALL' ? null : cat)}
-                  className={`rounded-full px-3 py-1 text-[11px] font-medium whitespace-nowrap transition \${
-                    isSelected ? 'bg-navy text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {cat.charAt(0) + cat.slice(1).toLowerCase()}
-                </button>
-              );
-            })}
-          </div>
+      {/* LEFT: Filters + Feed (560px) */}
+      <div className="flex w-full flex-col border-r border-slate-200 bg-slate-50 md:w-[560px] flex-shrink-0 relative z-20 shadow-[1px_0_10px_rgba(0,0,0,0.05)]">
+        
+        {/* Sticky Filters Header */}
+        <div className="sticky top-0 z-10 bg-white/95 backdrop-blur px-5 py-4 border-b border-slate-200 shadow-sm">
+          <CategoryChips />
+          <BudgetSlider />
+          <FilterToggles />
+          <ResultsCounter />
         </div>
 
-        {/* Places List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {/* Places Feed List */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4 pb-24">
           {loading ? (
-            <div className="flex items-center justify-center p-8 text-gray-500">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading places...
+            <div className="flex items-center justify-center p-12 text-slate-400">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading Vallikavu Hub data...
             </div>
           ) : places.length === 0 ? (
-            <div className="p-8 text-center text-sm text-gray-500">No places found in this area.</div>
+            <div className="p-12 text-center text-sm font-medium text-slate-500">
+              No matching places found. Adjust your filters or location.
+            </div>
           ) : (
-            places.map(place => <PlaceCard key={place.id} place={place} />)
+            places.map(place => (
+              <div key={place.id} onClick={(e) => {
+                 // Hack to intercept Add Bill button inside the PlaceCard since we don't have direct props passing for it
+                 const t = e.target as HTMLElement;
+                 if (t.innerText.includes('ADD BILL') || t.closest('span')?.innerText.includes('ADD BILL')) {
+                    setModalPlace({id: place.id, name: place.name});
+                 }
+              }}>
+                <PlaceCard place={place} />
+              </div>
+            ))
           )}
         </div>
       </div>
 
-      {/* MIDDLE: Map */}
-      <div className="flex-1 bg-gray-100 p-2 md:order-none order-first h-[300px] md:h-auto">
+      {/* RIGHT: Map View */}
+      <div className="flex-1 bg-slate-100 relative z-10">
         <MapView />
       </div>
 
-      {/* RIGHT: Detail View */}
-      {selectedPlace && (
-        <div className="flex w-full flex-col border-l border-gray-200 bg-white md:w-[350px] shadow-[0_0_15px_rgba(0,0,0,0.05)]">
-          <div className="border-b border-gray-100 p-4">
-            <h3 className="text-lg font-bold text-gray-900">{selectedPlace.name}</h3>
-            <p className="text-xs text-gray-500">{selectedPlace.address}</p>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto p-4 space-y-5">
-            {/* Intel Profile Snippet */}
-            {selectedPlace.intelligenceProfile ? (
-              <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm">
-                <div className="font-semibold text-blue-900 flex items-center gap-1.5 mb-1"><ShieldAlert className="h-4 w-4"/> Safety Score: {selectedPlace.intelligenceProfile.safetyScore}/100</div>
-              </div>
-            ) : null}
-
-            {/* AI Advisory */}
-            <AdvisoryPanel placeId={selectedPlace.id} />
-
-            {/* Fair Price Bands */}
-            <div className="space-y-2">
-               <h4 className="text-sm font-bold text-gray-800">Verified Price Range (MAD)</h4>
-               {selectedPlace.fairPriceBands.length > 0 ? (
-                 selectedPlace.fairPriceBands.map((band, idx) => (
-                   <PriceBandChart key={idx} band={band} />
-                 ))
-               ) : (
-                 <p className="text-xs text-gray-500 italic">No price bands established yet.</p>
-               )}
-            </div>
-
-            <hr className="border-gray-100" />
-            
-            {/* Price Submit */}
-            <PriceSubmitForm placeId={selectedPlace.id} />
-
-            <button onClick={() => setShowPopModal(true)} className="w-full text-[10px] text-gray-500 hover:text-navy underline">
-               Test Proof-of-Presence Token Manually
-            </button>
-          </div>
-
-          {showPopModal && <VerifyPoPModal placeId={selectedPlace.id} onClose={() => setShowPopModal(false)} />}
-        </div>
-      )}
+      {/* Sub-modals */}
+      {modalPlace && <SubmitBillModal placeId={modalPlace.id} placeName={modalPlace.name} onClose={() => setModalPlace(null)} />}
     </div>
   );
 }
