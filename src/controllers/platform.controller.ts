@@ -163,14 +163,86 @@ export class PlatformController {
     }
   }
 
-  // 4. Merchant Dashboard (Mock for now, returns structure)
+  // 4. Merchant Dashboard (real aggregated data)
   async getMerchantDashboard(req: FastifyRequest, reply: FastifyReply) {
-    return reply.send({
-      success: true,
-      data: {
-        message: 'Endpoint exists. Requires real auth integration.'
+    try {
+      const userId = (req.headers['x-user-id'] as string) || 'user-123';
+
+      const merchant = await prisma.merchantProfile.findFirst({
+        where: { userId },
+      });
+
+      if (!merchant) {
+        return reply.send({
+          success: true,
+          data: {
+            message: 'No merchant profile linked to this user. Register a business to see your dashboard.',
+          },
+        });
       }
-    });
+
+      const placeId = merchant.placeId;
+      const place = await prisma.place.findUnique({ where: { id: placeId } });
+
+      const submissions = await prisma.priceSubmission.findMany({
+        where: { placeId },
+        orderBy: { submittedAt: 'desc' },
+        take: 10,
+      });
+
+      const observations = await prisma.priceObservation.findMany({
+        where: { placeId },
+      });
+
+      const totalSubmissions = submissions.length;
+      const verifiedSubmissions = submissions.filter(s => s.isVerified).length;
+      const flaggedItems = submissions.filter(s => s.popDistance > 200).length;
+
+      const suggestedPrices: any[] = [];
+      const byItem = new Map<string, number[]>();
+      for (const obs of observations) {
+        const key = obs.itemName;
+        if (!byItem.has(key)) byItem.set(key, []);
+        byItem.get(key)!.push(Number(obs.reportedPrice));
+      }
+      // placeholder for median calc
+
+      for (const [itemName, prices] of byItem.entries()) {
+        const sorted = [...prices].sort((a, b) => a - b);
+        const median = sorted.length % 2 === 0 ? (sorted[(sorted.length / 2) - 1] + sorted[sorted.length / 2]) / 2 : sorted[Math.floor(sorted.length / 2)] || 0;
+        const lower = sorted[Math.floor(sorted.length * 0.25)] ?? median;
+        const upper = sorted[Math.floor(sorted.length * 0.75)] ?? median;
+        suggestedPrices.push({ itemName, fairLow: lower, fairHigh: upper, currentMarketMedian: median });
+      }
+
+      const intel = await prisma.intelligenceProfile.findUnique({ where: { placeId } });
+
+      return reply.send({
+        success: true,
+        data: {
+          merchant: { id: merchant.id, businessName: merchant.businessName, accountStatus: merchant.accountStatus },
+          place: {
+            id: place?.id, name: place?.name, address: place?.address,
+            currentSafetyScore: intel ? Number(intel.safetyScore) : 0,
+            verificationStatus: place?.verificationStatus,
+          },
+          recentSubmissions: submissions.map(s => ({
+            id: s.id, itemName: s.itemName, category: s.category,
+            reportedPrice: Number(s.reportedPrice), popVerified: s.popVerified,
+            isVerified: s.isVerified, submittedAt: s.submittedAt, userComment: s.userComment,
+          })),
+          submissionStats: { totalSubmissions, verifiedSubmissions, flaggedItems },
+          priceManagement: {
+            itemCount: suggestedPrices.length,
+            lastUpdated: observations.length ? observations[observations.length - 1].recordedAt : null,
+            suggestedPrices,
+          },
+          alerts: [],
+        },
+      });
+    } catch (e: any) {
+      return reply.status(500).send({ success: false, error: e.message });
+    }
   }
 }
 

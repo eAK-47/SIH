@@ -10,6 +10,7 @@
 import { PrismaClient } from '@prisma/client';
 import { places as seedPlaces } from '../../seeds/data.places';
 import { observations as seedObservations } from '../../seeds/data.observations-1';
+import { merchants } from "../../seeds/data.merchants";
 import { profiles as seedProfiles } from '../../seeds/data.profiles';
 
 let prisma: PrismaClient;
@@ -67,7 +68,7 @@ export async function seedDatabase(client: PrismaClient): Promise<void> {
   for (const p of seedPlaces) {
     await client.$executeRawUnsafe(`
       INSERT INTO "Place" (id, name, "entityType", location, address, "verificationStatus", "createdAt", "updatedAt")
-      VALUES ($1, $2, $3, ST_GeomFromText('POINT(${p.lng} ${p.lat})', 4326), $4, $5, NOW(), NOW())
+      VALUES ($1, $2, $3::"EntityType", ST_GeomFromText('POINT(${p.lng} ${p.lat})', 4326), $4, $5::"VerificationStatus", NOW(), NOW())
     `, p.id, p.name, p.entityType, p.address, p.verificationStatus);
   }
 
@@ -89,6 +90,7 @@ export async function seedDatabase(client: PrismaClient): Promise<void> {
   }
 
   // Insert profiles
+    for (const m of merchants) { await client.merchantProfile.create({ data: m }); }
   for (const profile of seedProfiles) {
     await client.intelligenceProfile.create({
       data: {

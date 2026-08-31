@@ -14,6 +14,7 @@ import { PrismaClient } from '@prisma/client';
 import { places } from './data.places';
 import { observations } from './data.observations-1';
 import { profiles } from './data.profiles';
+import { merchants } from './data.merchants';
 
 const prisma = new PrismaClient();
 
@@ -44,6 +45,8 @@ async function clearExistingData(): Promise<void> {
 
     // Order matters due to foreign key constraints:
     // IntelligenceProfile → PriceObservation → Place
+    const merchantsDeleted = await prisma.merchantProfile.deleteMany({});
+    console.log(`  • Deleted ${merchantsDeleted.count} merchants`);
     const profilesDeleted = await prisma.intelligenceProfile.deleteMany({});
     console.log(`  • Deleted ${profilesDeleted.count} intelligence profiles`);
 
@@ -65,7 +68,7 @@ async function insertPlaces(): Promise<void> {
     for (const p of places) {
       await prisma.$executeRawUnsafe(`
         INSERT INTO "Place" (id, name, "entityType", location, address, "verificationStatus", "createdAt", "updatedAt")
-        VALUES ($1, $2, $3, ST_GeomFromText('POINT(${p.lng} ${p.lat})', 4326), $4, $5, NOW(), NOW())
+        VALUES ($1, $2, $3::"EntityType", ST_GeomFromText('POINT(${p.lng} ${p.lat})', 4326), $4, $5::"VerificationStatus", NOW(), NOW())
       `, p.id, p.name, p.entityType, p.address, p.verificationStatus);
     }
 
@@ -149,6 +152,7 @@ async function main(): Promise<void> {
     await insertPlaces();
     await insertObservations();
     await insertProfiles();
+    await insertMerchants();
     await reportSummary();
 
     console.log('\n✨ All done! Database is ready for testing.\n');
@@ -161,3 +165,13 @@ async function main(): Promise<void> {
 }
 
 main();
+
+async function insertMerchants(): Promise<void> {
+  try {
+    console.log('⏳ Inserting merchant profiles...');
+    await prisma.merchantProfile.createMany({ data: merchants });
+    console.log(`✓ Inserted ${merchants.length} merchant profiles`);
+  } catch (error) {
+    throw new Error(`Failed to insert merchant profiles: ${error}`);
+  }
+}

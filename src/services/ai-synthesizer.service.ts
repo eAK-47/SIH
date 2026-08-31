@@ -5,6 +5,7 @@ let openai: OpenAI | undefined;
 if (env.OPENAI_API_KEY) {
   openai = new OpenAI({
     apiKey: env.OPENAI_API_KEY,
+    baseURL: 'http://localhost:3000/v1' // Route to OmniRoute fallback
   });
 }
 
@@ -46,13 +47,23 @@ STRICT CONSTRAINTS:
 4. Positive highlights (2-3): Recent positive feedback, known strengths, verification status
 5. Things to know (2-3): Actionable warnings, payment methods, busy times, common issues
 6. Confidence score (0-1): Based on data recency and volume
-7. Provide a brief reasoning for the risk level.`
+7. Provide a brief reasoning for the risk level.
+
+RETURN ONLY JSON. Return structure:
+{
+  "positive_highlights": ["string"],
+  "things_to_know": ["string"],
+  "risk_level": "LOW|MEDIUM|HIGH",
+  "confidence_score": 0.0-1.0,
+  "reasoning": "string"
+}`
 }
 
 export async function generateAdvisory(
   context: AdvisoryContext
 ): Promise<AdvisoryPayload | null> {
   if (!openai) {
+    console.error("OpenAI not initialized");
     return null;
   }
 
@@ -71,7 +82,7 @@ Negative: ${JSON.stringify(context.negativeReviews || [])}
 Recent: ${JSON.stringify(context.recentTouristComments || [])}`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'auto/fast',
       messages: [
         { role: 'system', content: buildSystemPrompt() },
         { role: 'user', content: prompt }
@@ -86,13 +97,11 @@ Recent: ${JSON.stringify(context.recentTouristComments || [])}`;
     let parsed: any;
     try {
       parsed = JSON.parse(content);
-      // Try to extract if format wrapped in object
       if (parsed.advisory) parsed = parsed.advisory;
-    } catch (e) {
+    } catch {
       return null;
     }
     
-    // Provide defaults if the AI missed something
     return {
       positive_highlights: Array.isArray(parsed.positive_highlights) ? parsed.positive_highlights : [],
       things_to_know: Array.isArray(parsed.things_to_know) ? parsed.things_to_know : [],
