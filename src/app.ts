@@ -1,7 +1,8 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
-import { env, swaggerConfig } from './config/index';
+import { env } from './config/index';
 import { placesRoutes } from './routes/places.routes';
+import { platformRoutes } from "./routes/platform.routes";
 
 export async function buildApp() {
   const app = Fastify({
@@ -13,7 +14,7 @@ export async function buildApp() {
   // ─── Plugins ────────────────────────────────────────────────────
   await app.register(cors, { origin: true });
 
-  if (swaggerConfig.enabled) {
+  if (env.SWAGGER_ENABLED) {
     const { default: swagger } = await import('@fastify/swagger');
     const { default: swaggerUi } = await import('@fastify/swagger-ui');
 
@@ -52,6 +53,9 @@ export async function buildApp() {
 
   // ─── API v1 routes ─────────────────────────────────────────────
   await app.register(placesRoutes, { prefix: '/api/v1/places' });
+  
+  // Register Part 2+3 Platform routes (PoP, Advisory, Price Submission, Merchant)
+  await app.register(platformRoutes, { prefix: '/api/v1/platform' });
 
   // ─── Global error handler ──────────────────────────────────────
   app.setErrorHandler((error, _request, reply) => {

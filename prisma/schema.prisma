@@ -36,6 +36,10 @@ model Place {
 
   priceObservations   PriceObservation[]
   intelligenceProfile IntelligenceProfile?
+  popVerifications    PopVerification[]
+  travelAdvisory      TravelAdvisory?
+  priceSubmissions    PriceSubmission[]
+  merchantProfile     MerchantProfile?
 
   @@index([entityType])
   @@index([verificationStatus])
@@ -65,4 +69,84 @@ model IntelligenceProfile {
   confidenceLevel  Int      @default(50) // 0-100
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+}
+
+// ════════════════════════════════════════════════════════════════
+// PART 2+3: PoP Verification, Advisory, Price Submission, Merchant
+// ════════════════════════════════════════════════════════════════
+
+model PopVerification {
+  id                String   @id @default(uuid())
+  userId            String
+  placeId           String
+  place             Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  userLat           Float
+  userLng           Float
+  targetLat         Float
+  targetLng         Float
+  distanceMeters    Int
+  isVerified        Boolean
+  status            String   // VERIFIED | OUT_OF_RANGE | INVALID_INPUT | EXPIRED
+  verificationToken String   @unique
+  expiresAt         DateTime
+  createdAt         DateTime @default(now())
+
+  @@index([placeId])
+  @@index([userId])
+  @@index([verificationToken])
+}
+
+model TravelAdvisory {
+  id                 String   @id @default(uuid())
+  placeId            String   @unique
+  place              Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  positiveHighlights String[] @db.Text
+  thingsToKnow       String[] @db.Text
+  riskLevel          String   // LOW | MEDIUM | HIGH
+  confidenceScore    Float    // 0-1
+  reasoning          String
+  generatedAt        DateTime @default(now())
+  validUntil         DateTime
+
+  @@index([placeId])
+}
+
+model PriceSubmission {
+  id            String    @id @default(uuid())
+  placeId       String
+  place         Place     @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  touristId     String    // Can be anonymous ID or auth user
+  itemName      String
+  category      String
+  reportedPrice Decimal   @db.Decimal(10, 2)
+  popVerified   Boolean
+  popDistance    Int
+  userComment   String?
+  photoUrl      String?
+  isVerified    Boolean   @default(false) // Merchant verification
+  submittedAt   DateTime  @default(now())
+  verifiedAt    DateTime?
+
+  @@index([placeId])
+  @@index([touristId])
+  @@index([submittedAt])
+}
+
+model MerchantProfile {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  placeId         String    @unique
+  place           Place     @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  businessName    String
+  email           String
+  phone           String
+  accountStatus   String    @default("PENDING") // PENDING | VERIFIED | SUSPENDED | INACTIVE
+  businessLicense String
+  taxId           String
+  ownershipProof  String
+  onboardedAt     DateTime  @default(now())
+  verifiedAt      DateTime?
+
+  @@index([userId])
+  @@index([accountStatus])
 }

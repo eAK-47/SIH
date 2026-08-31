@@ -133,14 +133,14 @@ export class PlaceRepository {
     };
   }
 
-  async create(data: Prisma.PlaceCreateInput, lat: number, lng: number) {
-    const pk = await prisma.place.create({ data });
-    // Update location with raw query since Prisma cannot easily handle geography
-    await prisma.$executeRawUnsafe(
-      `UPDATE "Place" SET location = ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography WHERE id = $3`,
-      lng, lat, pk.id
-    );
-    return pk;
+  async create(data: any, lat: number, lng: number) {
+    // Insert place with raw query to handle geography type
+    const result = await prisma.$executeRawUnsafe(`
+      INSERT INTO "Place" (id, name, "entityType", location, address, "verificationStatus", "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326)::geography, $6, $7, NOW(), NOW())
+      RETURNING id
+    `, data.id, data.name, data.entityType, lng, lat, data.address, data.verificationStatus);
+    return { id: data.id };
   }
 }
 

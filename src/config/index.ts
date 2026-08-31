@@ -10,4 +10,5 @@ export const env = {
   HOST: process.env.HOST || '0.0.0.0',
   NODE_ENV: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development',
   SWAGGER_ENABLED: process.env.SWAGGER_ENABLED !== 'false',
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
 } as const;

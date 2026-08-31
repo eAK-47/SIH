@@ -103,3 +103,122 @@ export interface NearbyPlaceRow {
   lat: number;
   lng: number;
 }
+
+// ════════════════════════════════════════════════════════════════
+// PART 2: PoP VERIFICATION & AI ADVISORY
+// ════════════════════════════════════════════════════════════════
+
+export interface PopVerificationRequest {
+  userLat: number;
+  userLng: number;
+  placeId: string;
+  userId?: string;       // optional – anonymous submissions allowed
+  maxRadiusMeters?: number; // default 150m
+}
+
+export interface PopVerificationResponse {
+  success: boolean;
+  isVerified: boolean;
+  distanceMeters: number;
+  message: string;
+  verificationToken?: string;
+  expiresAt?: string;    // ISO date string
+}
+
+export interface AdvisoryRequest {
+  placeId: string;
+  forceRefresh?: boolean; // bypass cache
+}
+
+export interface AdvisoryResponse {
+  success: boolean;
+  advisory: {
+    positiveHighlights: string[];
+    thingsToKnow: string[];
+    riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+    confidenceScore: number;
+    reasoning: string;
+  } | null;
+  cachedAt?: string;
+  error?: string;
+}
+
+// ════════════════════════════════════════════════════════════════
+// PART 3: PRICE SUBMISSION & MERCHANT MANAGEMENT
+// ════════════════════════════════════════════════════════════════
+
+export interface PriceSubmitRequest {
+  placeId: string;
+  itemName: string;
+  category: string;
+  reportedPrice: number;
+  popToken: string;       // Proof-of-presence token from verification
+  userComment?: string;
+  photoUrl?: string;
+}
+
+export interface PriceSubmitResponse {
+  success: boolean;
+  submissionId?: string;
+  message: string;
+  popVerified?: boolean;
+}
+
+export interface MerchantRegisterRequest {
+  businessName: string;
+  email: string;
+  phone: string;
+  placeId: string;
+  userId: string;
+  businessLicensePath: string;
+  taxIdPath: string;
+  ownershipProofPath: string;
+}
+
+export interface MerchantDashboardResponse {
+  success: boolean;
+  merchant: {
+    id: string;
+    businessName: string;
+    accountStatus: string;
+  };
+  place: {
+    id: string;
+    name: string;
+    address: string;
+    currentSafetyScore: number;
+    verificationStatus: string;
+  };
+  recentSubmissions: Array<{
+    id: string;
+    itemName: string;
+    category: string;
+    reportedPrice: number;
+    popVerified: boolean;
+    isVerified: boolean;
+    submittedAt: Date;
+    userComment?: string | null;
+  }>;
+  submissionStats: {
+    totalSubmissions: number;
+    verifiedSubmissions: number;
+    flaggedItems: number;
+  };
+  priceManagement: {
+    itemCount: number;
+    lastUpdated: Date | null;
+    suggestedPrices: Array<{
+      itemName: string;
+      fairLow: number;
+      fairHigh: number;
+      currentMarketMedian: number;
+    }>;
+  };
+  alerts: Array<{
+    id: string;
+    type: string;
+    message: string;
+    severity: string;
+    createdAt: Date;
+  }>;
+}
