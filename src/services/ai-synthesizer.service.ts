@@ -155,7 +155,7 @@ Recent: ${JSON.stringify(context.recentTouristComments || [])}`;
       reasoning: typeof parsed.reasoning === 'string' ? parsed.reasoning : fallbackAdvisory().reasoning
     };
   } catch (error) {
-    console.warn('AI Advisory generation error, falling back to local heuristics:', error.message);
+    console.warn('AI Advisory generation error, falling back to local heuristics:', (error as Error).message);
     return fallbackAdvisory();
   }
 }

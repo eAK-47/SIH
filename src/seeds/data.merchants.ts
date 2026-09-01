@@ -1,13 +1,13 @@
 export const merchants = [
   {
     userId: 'user-123',
-    placeId: '11111111-1111-1111-1111-111111111101',
-    businessName: 'Clafouti Beach Restaurant',
-    email: 'owner@clafouti.com',
-    phone: '+91-9876543210',
+    placeId: '11111111-1111-1111-1111-111111111104', // Amritham Meals
+    businessName: 'Amritham Traditional Meals',
+    email: 'contact@amritham.com',
+    phone: '+91-9847012345',
     accountStatus: 'VERIFIED',
-    businessLicense: 'LICENSE-123',
-    taxId: 'GST-123',
-    ownershipProof: 'PROOF-123'
+    businessLicense: 'FSSAI-2024-KL-091',
+    taxId: 'GST-32AAACA1234A1Z5',
+    ownershipProof: 'DOC-KL-AMR-01'
   }
 ];
