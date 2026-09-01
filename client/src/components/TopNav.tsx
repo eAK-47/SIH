@@ -1,9 +1,9 @@
-import { Search, Compass, Store } from 'lucide-react';
+import { Search, Compass, Store, ArrowLeft } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { GpsStatusPill } from './GpsStatusPill';
 
 export function TopNav() {
-  const { setActiveTab } = useAppStore();
+  const { activeTab, setActiveTab, searchQuery, setSearchQuery } = useAppStore();
 
   return (
     <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm md:px-6">
@@ -26,20 +26,33 @@ export function TopNav() {
           <Search className="absolute left-3 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search places, sadya meals, auto stands..."
-            className="w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            disabled={activeTab === 'merchant'}
+            placeholder={activeTab === 'merchant' ? "Search disabled in merchant view..." : "Search places, sadya meals, auto stands..."}
+            className="w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 disabled:opacity-50"
           />
         </div>
       </div>
 
       <div className="flex items-center gap-3">
         <GpsStatusPill />
-        <button 
-          onClick={() => setActiveTab('merchant')}
-          className="hidden md:flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-        >
-          <Store className="h-4 w-4" /> Merchant Portal
-        </button>
+        
+        {activeTab === 'tourist' ? (
+          <button
+            onClick={() => setActiveTab('merchant')}
+            className="hidden md:flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            <Store className="h-4 w-4" /> Merchant Portal
+          </button>
+        ) : (
+          <button
+            onClick={() => setActiveTab('tourist')}
+            className="hidden md:flex items-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-100"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to Map
+          </button>
+        )}
       </div>
     </header>
   );

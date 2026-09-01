@@ -21,10 +21,22 @@ export function TouristApp() {
     async function loadPlaces() {
       setLoading(true);
       try {
-        const res = await searchPlaces(userLat, userLng, 5000, categoryFilter || undefined, maxBudget || undefined);
+        const res = await searchPlaces(userLat, userLng, 5000, undefined, maxBudget || undefined);
         if (res.success && res.data?.places) {
           let filtered = res.data.places;
           
+          if (categoryFilter) {
+            // Map UI Category to backend EntityType
+            const map: Record<string, string[]> = {
+              'TRANSPORT': ['TRANSPORT'],
+              'MEALS': ['RESTAURANT'],
+              'BOATS': ['GUIDE'],
+              'RENTALS': ['HOTEL'] // based on our mapping
+            };
+            const allowedTypes = map[categoryFilter] || [];
+            filtered = filtered.filter(p => allowedTypes.includes(p.entityType));
+          }
+
           if (verifiedOnly) {
             filtered = filtered.filter(p => p.verificationStatus === 'VERIFIED' || p.verificationStatus === 'TRUSTED');
           }
