@@ -9,6 +9,7 @@ import { FilterToggles } from '../components/FilterToggles';
 import { ResultsCounter } from '../components/ResultsCounter';
 import { SubmitBillModal } from '../components/SubmitBillModal';
 import { Loader2 } from 'lucide-react';
+import { TransitMeterSimulator } from '../components/TransitMeterSimulator';
 
 export function TouristApp() {
   const { userLat, userLng, places, setPlaces, selectedPlace, categoryFilter, maxBudget, verifiedOnly, excludeDiscrepancy, searchQuery } = useAppStore();
@@ -16,6 +17,13 @@ export function TouristApp() {
   
   // Track modal state
   const [modalPlace, setModalPlace] = useState<{id: string, name: string} | null>(null);
+  const [transitModal, setTransitModal] = useState<{id: string, name: string} | null>(null);
+
+  
+  useEffect(() => {
+    (window as any).openTransitMeter = (id: string, name: string) => setTransitModal({ id, name });
+    return () => { delete (window as any).openTransitMeter; };
+  }, []);
 
   useEffect(() => {
     async function loadPlaces() {
@@ -117,6 +125,7 @@ export function TouristApp() {
 
       {/* Sub-modals */}
       {modalPlace && <SubmitBillModal placeId={modalPlace.id} placeName={modalPlace.name} onClose={() => setModalPlace(null)} />}
+      {transitModal && <TransitMeterSimulator placeId={transitModal.id} placeName={transitModal.name} onClose={() => setTransitModal(null)} />}
     </div>
   );
 }

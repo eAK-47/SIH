@@ -6,4 +6,5 @@ export async function platformRoutes(app: FastifyInstance) {
   app.post('/advisory/generate', {}, platformController.generateAdvisory.bind(platformController));
   app.post('/prices/submit', {}, platformController.submitPrice.bind(platformController));
   app.get('/merchant/dashboard', {}, platformController.getMerchantDashboard.bind(platformController));
+  app.post('/transit/audit-quote', {}, platformController.auditTransitQuote.bind(platformController));
 }

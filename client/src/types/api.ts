@@ -134,3 +134,20 @@ export interface MerchantDashboardResponse {
     createdAt: Date;
   }>;
 }
+
+export interface AuditQuoteResponse {
+  success: boolean;
+  audit: {
+    distanceKm: number;
+    durationMinutes: number;
+    standardMeterFare: number;
+    nightMeterFare: number;
+    isGoogleLiveRouted: boolean;
+    quotedPrice: number;
+    regulatedFare: number;
+    discrepancyPercent: number;
+    status: 'FAIR' | 'MODERATE_SURGE' | 'SEVERE_GOUGING';
+    recommendation: string;
+  } | null;
+  error?: string;
+}

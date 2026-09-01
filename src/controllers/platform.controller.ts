@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../config/database';
 import { verifyPresence, generatePopToken, verifyPopToken } from '../services/geo-validator.service';
 import { generateAdvisory } from '../services/ai-synthesizer.service';
+import { calculateRegulatedFare } from '../services/transit-meter.service';
 import { z } from 'zod';
 
 const popVerifySchema = z.object({
@@ -239,6 +240,48 @@ export class PlatformController {
           },
           alerts: [],
         },
+      });
+    } catch (e: any) {
+      return reply.status(500).send({ success: false, error: e.message });
+    }
+  }
+
+  // 5. Transit Audit Quote
+  async auditTransitQuote(req: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { placeId, destLat, destLng, quotedPrice, isNightFare } = req.body as any;
+
+      const place = await prisma.$queryRawUnsafe<any[]>(
+        'SELECT ST_Y(location::geometry) as lat, ST_X(location::geometry) as lng FROM "Place" WHERE id = $1',
+        placeId
+      );
+
+      if (!place || place.length === 0) {
+        return reply.status(404).send({ success: false, error: 'Origin Place not found' });
+      }
+
+      const origin = place[0];
+      const fareDetails = await calculateRegulatedFare(origin.lat, origin.lng, destLat, destLng);
+      
+      const activeFare = isNightFare ? fareDetails.nightMeterFare : fareDetails.standardMeterFare;
+      const margin = ((quotedPrice - activeFare) / activeFare) * 100;
+
+      let status: 'FAIR' | 'MODERATE_SURGE' | 'SEVERE_GOUGING' = 'FAIR';
+      if (quotedPrice > activeFare * 1.5) status = 'SEVERE_GOUGING';
+      else if (quotedPrice > activeFare * 1.15) status = 'MODERATE_SURGE';
+
+      return reply.send({
+        success: true,
+        audit: {
+          ...fareDetails,
+          quotedPrice,
+          regulatedFare: activeFare,
+          discrepancyPercent: Math.round(margin),
+          status,
+          recommendation: status === 'FAIR' ? 'This appears to be a fair rate. You can accept with confidence.' :
+            status === 'MODERATE_SURGE' ? 'Negotiate down to the standard meter fare or ask for shared pooling to drop the per-head price.' :
+            'Significant overcharging detected! Refer the driver to the official stand fare board or use public transport alternatives.'
+        }
       });
     } catch (e: any) {
       return reply.status(500).send({ success: false, error: e.message });

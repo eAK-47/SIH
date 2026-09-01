@@ -6,7 +6,7 @@ import { getCategoryAccent, getDisplayCategory, CATEGORY_CONFIG } from '../lib/c
 import { } from './SafetyBadge';
 import { FairPriceBandModule } from './FairPriceBandModule';
 import { ThingsToKnow } from './ThingsToKnow';
-import { ShieldCheck, MapPin, Plus } from 'lucide-react';
+import { ShieldCheck, CarTaxiFront, MapPin, Plus } from 'lucide-react';
 
 export function PlaceCard({ place }: { place: PlaceSearchResult }) {
   const { selectedPlace, setSelectedPlace, setPopToken } = useAppStore();
@@ -81,8 +81,13 @@ export function PlaceCard({ place }: { place: PlaceSearchResult }) {
         </span>
         <span onClick={(e) => { e.stopPropagation(); setSelectedPlace(place); }} 
               className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 transition hover:bg-slate-100">
-          <Plus className="h-3 w-3" /> Add Bill
+          <Plus className="h-3 w-3" /> Add Bill 
         </span>
+        {place.entityType === 'TRANSPORT' && (
+          <button onClick={(e) => { e.stopPropagation(); (window as any).openTransitMeter(place.id, place.name); }} className="flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700 transition hover:bg-blue-100 ml-2">
+            <CarTaxiFront className="h-3 w-3"/> Calculate Fare
+          </button>
+        )}
       </div>
     </button>
   );
