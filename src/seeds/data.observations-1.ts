@@ -85,6 +85,19 @@ export const observations: SeedObs[] = [
   { placeId: P[9], itemName: '1-Day Bicycle Rental', category: 'service', reportedPrice: 130, isVerified: true,  daysAgo: 4 },
   { placeId: P[9], itemName: '1-Day Bicycle Rental', category: 'service', reportedPrice: 250, isVerified: false, daysAgo: 1 },
 
+  // ─── Popular dish enrichment (high-coverage keyword search) ───
+
+  // Amritham Meals (P[3]) — sadya coverage
+  { placeId: P[3], itemName: 'Onam Sadya Thali',      category: 'food', reportedPrice: 150, isVerified: true,  daysAgo: 2 },
+  { placeId: P[3], itemName: 'Onam Sadya Thali',      category: 'food', reportedPrice: 150, isVerified: true,  daysAgo: 6 },
+
+  // Kollam Feast Beach Restaurant (P[4]) — biriyani & porotta coverage
+  { placeId: P[4], itemName: 'Chicken Biriyani',      category: 'food', reportedPrice: 180, isVerified: true,  daysAgo: 1 },
+  { placeId: P[4], itemName: 'Chicken Biriyani',      category: 'food', reportedPrice: 180, isVerified: true,  daysAgo: 3 },
+  { placeId: P[4], itemName: 'Chicken Biriyani',      category: 'food', reportedPrice: 350, isVerified: false, daysAgo: 2 },
+  { placeId: P[4], itemName: 'Kerala Porotta (2 pcs)', category: 'food', reportedPrice: 40, isVerified: true,  daysAgo: 1 },
+  { placeId: P[4], itemName: 'Kerala Porotta (2 pcs)', category: 'food', reportedPrice: 45, isVerified: true,  daysAgo: 4 },
+
   // ═══ HOSPITALS & WELLNESS (medical) ═══
 
   // Amrita Ayurveda Hospital & Research Centre (P[10])

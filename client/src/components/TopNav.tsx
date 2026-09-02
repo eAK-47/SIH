@@ -29,9 +29,18 @@ export function TopNav() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             disabled={activeTab === 'merchant'}
-            placeholder={activeTab === 'merchant' ? "Search disabled in merchant view..." : "Search places, sadya meals, auto stands..."}
-            className="w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 disabled:opacity-50"
+            placeholder={activeTab === 'merchant' ? "Search disabled in merchant view..." : "Search biriyani, sadya, porotta, auto drop, activa, kayak, ayurveda, op ticket..."}
+            className="w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-9 pr-9 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 disabled:opacity-50"
           />
+          {searchQuery && activeTab === 'tourist' && (
+            <button
+              onClick={() => setSearchQuery('')}
+              aria-label="Clear search"
+              className="absolute right-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-300 text-[10px] font-bold text-white transition hover:bg-slate-400"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 

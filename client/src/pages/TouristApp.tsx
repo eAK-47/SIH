@@ -10,6 +10,7 @@ import { ResultsCounter } from '../components/ResultsCounter';
 import { SubmitBillModal } from '../components/SubmitBillModal';
 import { Loader2 } from 'lucide-react';
 import { TransitMeterSimulator } from '../components/TransitMeterSimulator';
+import { matchesSearch } from '../lib/searchEngine';
 
 export function TouristApp() {
   const { userLat, userLng, places, setPlaces, categoryFilter, maxBudget, verifiedOnly, excludeDiscrepancy, searchQuery } = useAppStore();
@@ -62,8 +63,9 @@ export function TouristApp() {
             filtered = filtered.filter(p => !p.fairPriceBands.some(b => b.outlierCount > 0));
           }
           if (searchQuery) {
-            const q = searchQuery.toLowerCase();
-            filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || p.address.toLowerCase().includes(q));
+            // Multi-attribute match: names, addresses, dishes, routes,
+            // treatments, categories + colloquial synonyms (searchEngine).
+            filtered = filtered.filter(p => matchesSearch(p, searchQuery));
           }
 
           setPlaces(filtered);
