@@ -12,7 +12,7 @@ import { Loader2 } from 'lucide-react';
 import { TransitMeterSimulator } from '../components/TransitMeterSimulator';
 
 export function TouristApp() {
-  const { userLat, userLng, places, setPlaces, selectedPlace, categoryFilter, maxBudget, verifiedOnly, excludeDiscrepancy, searchQuery } = useAppStore();
+  const { userLat, userLng, places, setPlaces, categoryFilter, maxBudget, verifiedOnly, excludeDiscrepancy, searchQuery } = useAppStore();
   const [loading, setLoading] = useState(false);
   
   // Track modal state
@@ -22,7 +22,8 @@ export function TouristApp() {
   
   useEffect(() => {
     (window as any).openTransitMeter = (id: string, name: string) => setTransitModal({ id, name });
-    return () => { delete (window as any).openTransitMeter; };
+    (window as any).openAddBill = (id: string, name: string) => setModalPlace({ id, name });
+    return () => { delete (window as any).openTransitMeter; delete (window as any).openAddBill; };
   }, []);
 
   useEffect(() => {
@@ -67,18 +68,6 @@ export function TouristApp() {
     loadPlaces();
   }, [userLat, userLng, categoryFilter, maxBudget, verifiedOnly, excludeDiscrepancy, searchQuery, setPlaces]);
 
-  // Make PlaceCard trigger our new Add Bill modal
-  useEffect(() => {
-    const handleAddBill = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest('.add-bill-btn') && selectedPlace) {
-         setModalPlace({ id: selectedPlace.id, name: selectedPlace.name });
-      }
-    };
-    document.addEventListener('click', handleAddBill);
-    return () => document.removeEventListener('click', handleAddBill);
-  }, [selectedPlace]);
-
   return (
     <div className="flex h-full flex-col md:flex-row">
       {/* LEFT: Filters + Feed (560px) */}
@@ -104,15 +93,7 @@ export function TouristApp() {
             </div>
           ) : (
             places.map(place => (
-              <div key={place.id} onClick={(e) => {
-                 // Hack to intercept Add Bill button inside the PlaceCard since we don't have direct props passing for it
-                 const t = e.target as HTMLElement;
-                 if (t.innerText.includes('ADD BILL') || t.closest('span')?.innerText.includes('ADD BILL')) {
-                    setModalPlace({id: place.id, name: place.name});
-                 }
-              }}>
-                <PlaceCard place={place} />
-              </div>
+              <PlaceCard key={place.id} place={place} />
             ))
           )}
         </div>

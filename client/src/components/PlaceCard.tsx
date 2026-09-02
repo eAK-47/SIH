@@ -79,7 +79,7 @@ export function PlaceCard({ place }: { place: PlaceSearchResult }) {
         <span className="text-[10px] font-bold text-slate-400 tracking-widest">
           {place.safetyTags.length > 0 && place.safetyTags[0].label}
         </span>
-        <span onClick={(e) => { e.stopPropagation(); setSelectedPlace(place); }} 
+        <span onClick={(e) => { e.stopPropagation(); (window as any).openAddBill(place.id, place.name); }} 
               className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 transition hover:bg-slate-100">
           <Plus className="h-3 w-3" /> Add Bill 
         </span>
