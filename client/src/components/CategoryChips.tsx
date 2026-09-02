@@ -2,7 +2,7 @@ import { useAppStore } from '../store/useAppStore';
 
 export function CategoryChips() {
   const { categoryFilter, setCategoryFilter } = useAppStore();
-  const categories = ['ALL', 'TRANSPORT', 'MEALS', 'BOATS', 'RENTALS'];
+  const categories = ['ALL', 'TRANSPORT', 'MEALS', 'BOATS', 'RENTALS', 'HOSPITALS'];
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">

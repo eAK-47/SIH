@@ -23,6 +23,7 @@ export default {
           meals:     { 600:'#059669', 50:'#ECFDF5' },
           boats:     { 600:'#9333EA', 50:'#FAF5FF' },
           rentals:   { 600:'#D97706', 50:'#FFFBEB' },
+          medical:   { 600:'#E11D48', 50:'#FFF1F2' },
         },
       },
       fontFamily: {

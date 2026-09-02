@@ -30,20 +30,29 @@ export function TouristApp() {
     async function loadPlaces() {
       setLoading(true);
       try {
-        const res = await searchPlaces(userLat, userLng, 5000, undefined, maxBudget || undefined);
+        const res = await searchPlaces(userLat, userLng, 8000, undefined, maxBudget || undefined);
         if (res.success && res.data?.places) {
           let filtered = res.data.places;
           
           if (categoryFilter) {
-            // Map UI Category to backend EntityType
+            // Map UI Category to backend EntityType.
+            // Hospitals are seeded as HOTEL but identified by name pattern,
+            // so RENTALS must exclude medical facilities and vice-versa.
+            const medical = /hospital|ayurveda|clinic|medical|wellness/i;
             const map: Record<string, string[]> = {
               'TRANSPORT': ['TRANSPORT'],
               'MEALS': ['RESTAURANT'],
               'BOATS': ['GUIDE'],
-              'RENTALS': ['HOTEL'] // based on our mapping
+              'RENTALS': ['HOTEL'],
+              'HOSPITALS': ['HOTEL']
             };
             const allowedTypes = map[categoryFilter] || [];
-            filtered = filtered.filter(p => allowedTypes.includes(p.entityType));
+            filtered = filtered.filter(p => {
+              if (!allowedTypes.includes(p.entityType)) return false;
+              if (categoryFilter === 'HOSPITALS') return medical.test(p.name);
+              if (categoryFilter === 'RENTALS') return !medical.test(p.name);
+              return true;
+            });
           }
 
           if (verifiedOnly) {

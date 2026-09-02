@@ -14,10 +14,11 @@ const categoryHexColor: Record<string, string> = {
   meals: '#059669',
   boats: '#9333EA',
   rentals: '#D97706',
+  hospitals: '#E11D48',
 };
 
 const createCustomIcon = (place: PlaceSearchResult, isSelected: boolean) => {
-  const cat = getDisplayCategory(place.entityType);
+  const cat = getDisplayCategory(place.entityType, place.name);
   const color = categoryHexColor[cat];
   const size = isSelected ? 40 : 30;
   const svg = `
@@ -95,7 +96,7 @@ export function MapView() {
               <div className="rounded-lg border border-slate-200 bg-white p-2 shadow-card min-w-[180px]">
                 <div className="text-xs font-bold text-slate-900">{place.name}</div>
                 <div className="text-[10px] uppercase font-bold tracking-wider text-brand-600">
-                  {CATEGORY_CONFIG[getDisplayCategory(place.entityType)].label}
+                  {CATEGORY_CONFIG[getDisplayCategory(place.entityType, place.name)].label}
                 </div>
                 {place.fairPriceBands[0] && (
                   <div className="mt-1 text-[11px] font-semibold font-numeric text-slate-700">

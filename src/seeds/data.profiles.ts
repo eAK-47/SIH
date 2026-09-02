@@ -70,5 +70,35 @@ export const profiles: SeedProfile[] = [
     confidenceLevel: 88,
     positiveHighlights: ['Eco-friendly and affordable transport'],
     thingsToKnow: ['Ensure cycle condition before renting']
+  },
+
+  // ═══ HOSPITALS & WELLNESS (medical) ═══
+  {
+    placeId: '11111111-1111-1111-1111-111111111111', // P[10] Amrita Ayurveda Hospital & Research Centre
+    safetyScore: 92,
+    confidenceLevel: 86,
+    positiveHighlights: ['Standard institutional OP registration at ₹150', 'Certified Panchakarma therapy at fixed ₹900 per session'],
+    thingsToKnow: ['Private wellness packages (day use) may include non-subsidized room add-ons; request itemized billing before admission (2 reports)']
+  },
+  {
+    placeId: '11111111-1111-1111-1111-111111111112', // P[11] Govt Taluk Head Quarters Hospital
+    safetyScore: 94,
+    confidenceLevel: 90,
+    positiveHighlights: ['Statutory government OP token at ₹10', 'Official casualty emergency assessment at ₹20'],
+    thingsToKnow: ['External pharmacy purchases for prescribed medicines have reported generic substitution charges around ₹450; prefer the in-house hospital pharmacy (2 reports)']
+  },
+  {
+    placeId: '11111111-1111-1111-1111-111111111113', // P[12] Parabrahma Speciality Hospital
+    safetyScore: 88,
+    confidenceLevel: 84,
+    positiveHighlights: ['Listed specialist OP consultation at ₹300', 'Published day-care observation tariff at ₹800 (2 Hrs)'],
+    thingsToKnow: ['Unlisted rapid-triage surcharges up to ₹1600 reported during night hours; confirm the observation tariff sheet before admission (2 reports)']
+  },
+  {
+    placeId: '11111111-1111-1111-1111-111111111114', // P[13] KIMS Multispeciality Hospital
+    safetyScore: 89,
+    confidenceLevel: 82,
+    positiveHighlights: ['Transparent multispeciality base registration at ₹400', 'Official diagnostic tariff for blood chemistry panel at ₹650'],
+    thingsToKnow: ['Ask for the printed diagnostic tariff list before approving additional lab tests']
   }
 ];

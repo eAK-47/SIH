@@ -12,8 +12,8 @@ export function PlaceCard({ place }: { place: PlaceSearchResult }) {
   const { selectedPlace, setSelectedPlace, setPopToken } = useAppStore();
   const isSelected = selectedPlace?.id === place.id;
   const badge = verificationBadge(place.verificationStatus);
-  const catAccent = getCategoryAccent(place.entityType);
-  const displayCat = CATEGORY_CONFIG[getDisplayCategory(place.entityType)];
+  const catAccent = getCategoryAccent(place.entityType, place.name);
+  const displayCat = CATEGORY_CONFIG[getDisplayCategory(place.entityType, place.name)];
 
   const mainBand = place.fairPriceBands[0];
   const advisoryMessages = place.intelligenceProfile?.thingsToKnow || [];

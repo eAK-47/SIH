@@ -40,5 +40,11 @@ export const places: SeedPlace[] = [
   { id: '11111111-1111-1111-1111-111111111107', name: 'Alumkadavu Boat Jetty',              entityType: 'GUIDE',      lat: 9.0831,  lng: 76.5342, address: 'Alumkadavu Boat Jetty Desk, Karunagappally',     verificationStatus: 'VERIFIED' },
   { id: '11111111-1111-1111-1111-111111111108', name: 'Backwater Kayak Hub',                entityType: 'GUIDE',      lat: 9.0855,  lng: 76.5360, address: 'Alumkadavu Backwater Hub, Karunagappally',       verificationStatus: 'TRUSTED' },
   { id: '11111111-1111-1111-1111-111111111109', name: 'Amrita Bike & Scooter Rentals',      entityType: 'HOTEL',      lat: 9.0918,  lng: 76.5172, address: 'Footbridge Road, Vallikavu, Kerala',             verificationStatus: 'VERIFIED' },
-  { id: '11111111-1111-1111-1111-111111111110', name: 'Vallikavu Cycle Point',              entityType: 'HOTEL',      lat: 9.0930,  lng: 76.5189, address: 'Main Road, Vallikavu, Kerala',                   verificationStatus: 'TRUSTED' }
+  { id: '11111111-1111-1111-1111-111111111110', name: 'Vallikavu Cycle Point',              entityType: 'HOTEL',      lat: 9.0930,  lng: 76.5189, address: 'Main Road, Vallikavu, Kerala',                   verificationStatus: 'TRUSTED' },
+
+  // ═══ HOSPITALS & WELLNESS (medical — seeded under HOTEL backend type) ═══
+  { id: '11111111-1111-1111-1111-111111111111', name: 'Amrita Ayurveda Hospital & Research Centre', entityType: 'HOTEL', lat: 9.0889, lng: 76.5167, address: 'Amritapuri, Clappana P.O, Vallikavu, Kerala 690525',      verificationStatus: 'TRUSTED' },
+  { id: '11111111-1111-1111-1111-111111111112', name: 'Govt Taluk Head Quarters Hospital',           entityType: 'HOTEL', lat: 9.0525, lng: 76.5385, address: 'Hospital Road, Pada North, Karunagappally, Kerala 690518', verificationStatus: 'VERIFIED' },
+  { id: '11111111-1111-1111-1111-111111111113', name: 'Parabrahma Speciality Hospital',              entityType: 'HOTEL', lat: 9.1295, lng: 76.5145, address: 'South Gate, Oachira, Kerala 690526',                      verificationStatus: 'VERIFIED' },
+  { id: '11111111-1111-1111-1111-111111111114', name: 'KIMS Multispeciality Hospital Karunagappally', entityType: 'HOTEL', lat: 9.0610, lng: 76.5320, address: 'KIMS Junction, Karunagappally, Kerala 690518',            verificationStatus: 'VERIFIED' }
 ];
