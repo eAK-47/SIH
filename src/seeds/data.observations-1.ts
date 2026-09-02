@@ -117,5 +117,102 @@ export const observations: SeedObs[] = [
 
   // KIMS Multispeciality Hospital (P[13])
   { placeId: P[13], itemName: 'Emergency Casualty Registration',           category: 'medical', reportedPrice: 400,  isVerified: true,  daysAgo: 2 },
-  { placeId: P[13], itemName: 'Basic Blood Chemistry Panel',               category: 'medical', reportedPrice: 650,  isVerified: true,  daysAgo: 4 }
+  { placeId: P[13], itemName: 'Basic Blood Chemistry Panel',               category: 'medical', reportedPrice: 650,  isVerified: true,  daysAgo: 4 },
+
+  // ═══ LOCAL RESTAURANTS & DINING (P[14]–P[32]) ═══
+
+  // Green Park Family Restaurant (P[14])
+  { placeId: P[14], itemName: 'Chicken Fried Rice & Chili Chicken',        category: 'food', reportedPrice: 230, isVerified: true,  daysAgo: 2 },
+  { placeId: P[14], itemName: 'Special Seafood Tandoori Platter',          category: 'food', reportedPrice: 550, isVerified: false, daysAgo: 1 },
+
+  // Hot Pot Restaurant (P[15])
+  { placeId: P[15], itemName: 'Veg Meals Thali',                           category: 'food', reportedPrice: 90,  isVerified: true,  daysAgo: 1 },
+  { placeId: P[15], itemName: 'Fish Curry Add-on',                         category: 'food', reportedPrice: 180, isVerified: false, daysAgo: 3 },
+
+  // Chill Out Restaurant (P[16])
+  { placeId: P[16], itemName: 'Shawarma Roll & Fresh Juice',               category: 'food', reportedPrice: 140, isVerified: true,  daysAgo: 2 },
+  { placeId: P[16], itemName: 'Late Night Delivery Charge',                category: 'food', reportedPrice: 220, isVerified: false, daysAgo: 1 },
+
+  // Chick Hub (P[17])
+  { placeId: P[17], itemName: 'Crispy Fried Chicken Combo',                category: 'food', reportedPrice: 190, isVerified: true,  daysAgo: 1 },
+  { placeId: P[17], itemName: 'Dine-in Service Surcharge',                 category: 'food', reportedPrice: 250, isVerified: false, daysAgo: 2 },
+
+  // Avila Kitchen (P[18])
+  { placeId: P[18], itemName: 'Home Style Kerala Lunch',                   category: 'food', reportedPrice: 110, isVerified: true,  daysAgo: 2 },
+  { placeId: P[18], itemName: 'Special Prawn Roast',                       category: 'food', reportedPrice: 320, isVerified: false, daysAgo: 1 },
+
+  // Karthika Hotel (P[19])
+  { placeId: P[19], itemName: 'Kerala Parotta & Beef Fry',                 category: 'food', reportedPrice: 160, isVerified: true,  daysAgo: 1 },
+  { placeId: P[19], itemName: 'Special Mutton Curry',                      category: 'food', reportedPrice: 340, isVerified: false, daysAgo: 4 },
+
+  // Bhuwaneshwari Hotel (P[20])
+  { placeId: P[20], itemName: 'Vegetarian Breakfast Set',                  category: 'food', reportedPrice: 70,  isVerified: true,  daysAgo: 2 },
+  { placeId: P[20], itemName: 'Special Festival Meal',                     category: 'food', reportedPrice: 150, isVerified: false, daysAgo: 1 },
+
+  // Campus Cafe 3.0 (P[21])
+  { placeId: P[21], itemName: 'Cold Coffee & Muffin',                      category: 'food', reportedPrice: 110, isVerified: true,  daysAgo: 1 },
+
+  // Mathas Hotel (P[22])
+  { placeId: P[22], itemName: 'Fish Meal & Side Fry',                      category: 'food', reportedPrice: 150, isVerified: true,  daysAgo: 2 },
+  { placeId: P[22], itemName: 'Seafood Special (Karimeen)',                category: 'food', reportedPrice: 480, isVerified: false, daysAgo: 1 },
+
+  // Usthad Hotel (P[23])
+  { placeId: P[23], itemName: 'Malabar Chicken Biryani',                   category: 'food', reportedPrice: 170, isVerified: true,  daysAgo: 1 },
+  { placeId: P[23], itemName: 'Chicken Biryani (Peak Rush)',               category: 'food', reportedPrice: 250, isVerified: false, daysAgo: 3 },
+
+  // Lake View Hotel (P[24])
+  { placeId: P[24], itemName: 'Duck Curry & Appam',                        category: 'food', reportedPrice: 210, isVerified: true,  daysAgo: 2 },
+  { placeId: P[24], itemName: 'Lake View Fresh Catch',                     category: 'food', reportedPrice: 600, isVerified: false, daysAgo: 1 },
+
+  // Nadan Swath (P[25])
+  { placeId: P[25], itemName: 'Traditional Kerala Meals',                  category: 'food', reportedPrice: 100, isVerified: true,  daysAgo: 1 },
+
+  // Lalitha Hotel (P[26])
+  { placeId: P[26], itemName: 'Tea & Snacks Plate',                        category: 'food', reportedPrice: 45,  isVerified: true,  daysAgo: 2 },
+
+  // Ohamkaram Hotel (P[27])
+  { placeId: P[27], itemName: 'Nadan Fish Curry Meal',                     category: 'food', reportedPrice: 130, isVerified: true,  daysAgo: 1 },
+
+  // Ananda Tea Stall (P[28])
+  { placeId: P[28], itemName: 'Hot Tea & Banana Fritter (Pazham Pori)',    category: 'food', reportedPrice: 35,  isVerified: true,  daysAgo: 1 },
+
+  // North Indian Dhaba Vallikavu (P[29])
+  { placeId: P[29], itemName: 'Paneer Butter Masala & Roti',               category: 'food', reportedPrice: 180, isVerified: true,  daysAgo: 2 },
+  { placeId: P[29], itemName: 'Paneer Butter Masala & Roti',               category: 'food', reportedPrice: 280, isVerified: false, daysAgo: 1 },
+
+  // Vallikavu Chicken Centre (P[30])
+  { placeId: P[30], itemName: 'Grilled Chicken (Half)',                    category: 'food', reportedPrice: 220, isVerified: true,  daysAgo: 1 },
+  { placeId: P[30], itemName: 'Grilled Chicken (Half)',                    category: 'food', reportedPrice: 320, isVerified: false, daysAgo: 2 },
+
+  // Namo Bakkala (P[31])
+  { placeId: P[31], itemName: 'Vegetarian Combo Meal',                     category: 'food', reportedPrice: 120, isVerified: true,  daysAgo: 1 },
+
+  // Amritam Restaurant (P[32])
+  { placeId: P[32], itemName: 'South Indian Pure Veg Thali',               category: 'food', reportedPrice: 90,  isVerified: true,  daysAgo: 1 },
+
+  // ═══ LOCAL RENTALS (P[33]–P[38]) ═══
+
+  // Vallikavu Royal Rides (P[33])
+  { placeId: P[33], itemName: '1-Day Suzuki Access 125',                   category: 'service', reportedPrice: 450,  isVerified: true,  daysAgo: 1 },
+  { placeId: P[33], itemName: '1-Day Suzuki Access 125',                   category: 'service', reportedPrice: 800,  isVerified: false, daysAgo: 2 },
+
+  // Alumkadavu Lake Scooters (P[34])
+  { placeId: P[34], itemName: '1-Day TVS Jupiter Rental',                  category: 'service', reportedPrice: 400,  isVerified: true,  daysAgo: 2 },
+  { placeId: P[34], itemName: '1-Day TVS Jupiter Rental',                  category: 'service', reportedPrice: 700,  isVerified: false, daysAgo: 1 },
+
+  // Vavvakkavu Bike Point (P[35])
+  { placeId: P[35], itemName: '1-Day Pulsar 150 Rental',                   category: 'service', reportedPrice: 650,  isVerified: true,  daysAgo: 1 },
+  { placeId: P[35], itemName: '1-Day Pulsar 150 Rental',                   category: 'service', reportedPrice: 1200, isVerified: false, daysAgo: 3 },
+
+  // Amritapuri Student Scooters (P[36])
+  { placeId: P[36], itemName: '1-Day Electric Scooter (Ather/iQube)',      category: 'service', reportedPrice: 500,  isVerified: true,  daysAgo: 1 },
+  { placeId: P[36], itemName: '1-Day Electric Scooter (Ather/iQube)',      category: 'service', reportedPrice: 900,  isVerified: false, daysAgo: 2 },
+
+  // Clappana Ride Rentals (P[37])
+  { placeId: P[37], itemName: '1-Day Yamaha FZ Rental',                    category: 'service', reportedPrice: 700,  isVerified: true,  daysAgo: 1 },
+  { placeId: P[37], itemName: '1-Day Yamaha FZ Rental',                    category: 'service', reportedPrice: 1300, isVerified: false, daysAgo: 2 },
+
+  // Azheekal Coast Wheels (P[38])
+  { placeId: P[38], itemName: '1-Day Bicycle Rental',                      category: 'service', reportedPrice: 100,  isVerified: true,  daysAgo: 1 },
+  { placeId: P[38], itemName: '1-Day Bicycle Rental',                      category: 'service', reportedPrice: 250,  isVerified: false, daysAgo: 2 }
 ];
