@@ -102,22 +102,47 @@ export const observations: SeedObs[] = [
 
   // Amrita Ayurveda Hospital & Research Centre (P[10])
   { placeId: P[10], itemName: 'General Ayurveda OP Consultation',          category: 'medical', reportedPrice: 150,  isVerified: true,  daysAgo: 2 },
+  { placeId: P[10], itemName: 'General Ayurveda OP Consultation',          category: 'medical', reportedPrice: 160,  isVerified: true,  daysAgo: 4 },
+  { placeId: P[10], itemName: 'General Ayurveda OP Consultation',          category: 'medical', reportedPrice: 150,  isVerified: true,  daysAgo: 6 },
+  { placeId: P[10], itemName: 'General Ayurveda OP Consultation',          category: 'medical', reportedPrice: 170,  isVerified: true,  daysAgo: 8 },
   { placeId: P[10], itemName: 'Panchakarma (Abhyangam 1 Session)',         category: 'medical', reportedPrice: 900,  isVerified: true,  daysAgo: 4 },
+  { placeId: P[10], itemName: 'Panchakarma (Abhyangam 1 Session)',         category: 'medical', reportedPrice: 900,  isVerified: true,  daysAgo: 5 },
+  { placeId: P[10], itemName: 'Panchakarma (Abhyangam 1 Session)',         category: 'medical', reportedPrice: 950,  isVerified: true,  daysAgo: 7 },
+  { placeId: P[10], itemName: 'Panchakarma (Abhyangam 1 Session)',         category: 'medical', reportedPrice: 1000, isVerified: true,  daysAgo: 8 },
+  { placeId: P[10], itemName: 'Specialized Wellness Package (Single Day)', category: 'medical', reportedPrice: 2400, isVerified: true,  daysAgo: 3 },
+  { placeId: P[10], itemName: 'Specialized Wellness Package (Single Day)', category: 'medical', reportedPrice: 2600, isVerified: true,  daysAgo: 5 },
+  { placeId: P[10], itemName: 'Specialized Wellness Package (Single Day)', category: 'medical', reportedPrice: 2700, isVerified: true,  daysAgo: 7 },
   { placeId: P[10], itemName: 'Specialized Wellness Package (Single Day)', category: 'medical', reportedPrice: 2800, isVerified: false, daysAgo: 1 },
 
   // Govt Taluk Head Quarters Hospital (P[11])
   { placeId: P[11], itemName: 'General OP Ticket Fee',                     category: 'medical', reportedPrice: 10,   isVerified: true,  daysAgo: 3 },
+  { placeId: P[11], itemName: 'General OP Ticket Fee',                     category: 'medical', reportedPrice: 10,   isVerified: true,  daysAgo: 6 },
   { placeId: P[11], itemName: 'Casualty Emergency Assessment',             category: 'medical', reportedPrice: 20,   isVerified: true,  daysAgo: 5 },
+  { placeId: P[11], itemName: 'Casualty Emergency Assessment',             category: 'medical', reportedPrice: 20,   isVerified: true,  daysAgo: 7 },
+  { placeId: P[11], itemName: 'Private Pharmacy Prescription Run',         category: 'medical', reportedPrice: 120,  isVerified: true,  daysAgo: 2 },
+  { placeId: P[11], itemName: 'Private Pharmacy Prescription Run',         category: 'medical', reportedPrice: 150,  isVerified: true,  daysAgo: 4 },
+  { placeId: P[11], itemName: 'Private Pharmacy Prescription Run',         category: 'medical', reportedPrice: 180,  isVerified: true,  daysAgo: 6 },
   { placeId: P[11], itemName: 'Private Pharmacy Prescription Run',         category: 'medical', reportedPrice: 450,  isVerified: false, daysAgo: 1 },
 
   // Parabrahma Speciality Hospital (P[12])
   { placeId: P[12], itemName: 'Specialist Doctor OP Consultation',         category: 'medical', reportedPrice: 300,  isVerified: true,  daysAgo: 2 },
+  { placeId: P[12], itemName: 'Specialist Doctor OP Consultation',         category: 'medical', reportedPrice: 300,  isVerified: true,  daysAgo: 4 },
+  { placeId: P[12], itemName: 'Specialist Doctor OP Consultation',         category: 'medical', reportedPrice: 350,  isVerified: true,  daysAgo: 6 },
+  { placeId: P[12], itemName: 'Specialist Doctor OP Consultation',         category: 'medical', reportedPrice: 400,  isVerified: true,  daysAgo: 8 },
   { placeId: P[12], itemName: 'Emergency Observation (2 Hrs)',             category: 'medical', reportedPrice: 800,  isVerified: true,  daysAgo: 3 },
+  { placeId: P[12], itemName: 'Emergency Observation (2 Hrs)',             category: 'medical', reportedPrice: 850,  isVerified: true,  daysAgo: 5 },
+  { placeId: P[12], itemName: 'Emergency Observation (2 Hrs)',             category: 'medical', reportedPrice: 900,  isVerified: true,  daysAgo: 7 },
   { placeId: P[12], itemName: 'Emergency Observation (2 Hrs)',             category: 'medical', reportedPrice: 1600, isVerified: false, daysAgo: 1 },
 
   // KIMS Multispeciality Hospital (P[13])
   { placeId: P[13], itemName: 'Emergency Casualty Registration',           category: 'medical', reportedPrice: 400,  isVerified: true,  daysAgo: 2 },
+  { placeId: P[13], itemName: 'Emergency Casualty Registration',           category: 'medical', reportedPrice: 400,  isVerified: true,  daysAgo: 5 },
+  { placeId: P[13], itemName: 'Emergency Casualty Registration',           category: 'medical', reportedPrice: 450,  isVerified: true,  daysAgo: 7 },
+  { placeId: P[13], itemName: 'Emergency Casualty Registration',           category: 'medical', reportedPrice: 500,  isVerified: true,  daysAgo: 8 },
   { placeId: P[13], itemName: 'Basic Blood Chemistry Panel',               category: 'medical', reportedPrice: 650,  isVerified: true,  daysAgo: 4 },
+  { placeId: P[13], itemName: 'Basic Blood Chemistry Panel',               category: 'medical', reportedPrice: 650,  isVerified: true,  daysAgo: 6 },
+  { placeId: P[13], itemName: 'Basic Blood Chemistry Panel',               category: 'medical', reportedPrice: 700,  isVerified: true,  daysAgo: 7 },
+  { placeId: P[13], itemName: 'Basic Blood Chemistry Panel',               category: 'medical', reportedPrice: 750,  isVerified: true,  daysAgo: 8 },
 
   // ═══ LOCAL RESTAURANTS & DINING (P[14]–P[32]) ═══
 
