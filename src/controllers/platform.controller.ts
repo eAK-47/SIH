@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../config/database';
-import { verifyPresence, generatePopToken, verifyPopToken } from '../services/geo-validator.service';
+import { verifyPresence, generatePopToken, verifyPopToken, calculateDistance } from '../services/geo-validator.service';
 import { generateAdvisory } from '../services/ai-synthesizer.service';
 import { calculateRegulatedFare } from '../services/transit-meter.service';
 import { z } from 'zod';
@@ -49,7 +49,8 @@ export class PlatformController {
         return reply.status(400).send({ success: false, message: result.message });
       }
 
-      const token = result.isVerified ? generatePopToken(data.userLat, data.userLng, data.placeId) : null;
+      // Always mint a token so remote submissions can still be logged (marked popVerified=false)
+      const token = generatePopToken(data.userLat, data.userLng, data.placeId);
       
       return reply.send({
         success: true,
@@ -131,6 +132,19 @@ export class PlatformController {
          return reply.status(401).send({ success: false, message: 'Invalid or expired PoP token' });
       }
 
+      // Recompute the physical distance from the token's GPS stamp to the place
+      const placeRow = await prisma.$queryRawUnsafe<any[]>(
+        'SELECT ST_Y(location::geometry) as lat, ST_X(location::geometry) as lng FROM "Place" WHERE id = $1',
+        data.placeId
+      );
+      let popDistance = 0;
+      let popVerified = true;
+      if (placeRow && placeRow.length > 0) {
+        const p = placeRow[0];
+        popDistance = calculateDistance(tokenPayload.lat, tokenPayload.lng, p.lat, p.lng);
+        popVerified = popDistance <= 150;
+      }
+
       const submission = await prisma.priceSubmission.create({
         data: {
           placeId: data.placeId,
@@ -138,8 +152,8 @@ export class PlatformController {
           itemName: data.itemName,
           category: data.category,
           reportedPrice: data.reportedPrice,
-          popVerified: true,
-          popDistance: 0, // In reality, we could embed distance in token
+          popVerified,
+          popDistance,
           userComment: data.userComment,
           photoUrl: data.photoUrl
         }

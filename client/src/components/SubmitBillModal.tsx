@@ -27,13 +27,15 @@ export function SubmitBillModal({ placeId, placeName, onClose }: { placeId: stri
     setPopStatus('pending');
     try {
       const res = await verifyPop(userLat, userLng, placeId);
-      if (res.isVerified && res.verificationToken) {
+      if (res.verificationToken) {
         setPopToken(res.verificationToken);
+      }
+      if (res.isVerified) {
         setPopStatus('success');
         setPopMsg('Within 150m (Verified PoP)');
       } else {
         setPopStatus('warn');
-        setPopMsg('Remote submission (&gt;150m)');
+        setPopMsg(`Remote submission (>${res.distanceMeters}m) — will be logged as unverified.`);
       }
     } catch (err: any) {
       setPopStatus('error');
@@ -98,7 +100,7 @@ export function SubmitBillModal({ placeId, placeName, onClose }: { placeId: stri
                   </button>
                 </div>
                 {popStatus === 'success' && <div className="flex items-center gap-1 text-[11px] font-bold text-brand-600"><CheckCircle className="h-3.5 w-3.5"/> Verified (&lt;150m)</div>}
-                {popStatus === 'warn' && <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600"><AlertTriangle className="h-3.5 w-3.5"/> Remote (&gt;150m)</div>}
+                {popStatus === 'warn' && <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600"><AlertTriangle className="h-3.5 w-3.5"/> Remote submission (unverified)</div>}
                 {popStatus === 'error' && <div className="text-[11px] font-bold text-rose-600">{popMsg}</div>}
               </div>
             </div>
@@ -122,7 +124,7 @@ export function SubmitBillModal({ placeId, placeName, onClose }: { placeId: stri
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-400">₹</span>
                   <input type="number" min="1" value={price} onChange={e=>setPrice(e.target.value)} required placeholder="1200" className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-xl font-bold font-numeric text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500" />
                 </div>
-                <p className="mt-1.5 text-[11px] text-slate-400">Submitting an inflated price (e.g. ₹1200) tests the MAD anomaly filter in real time.</p>
+                <p className="mt-1.5 text-[11px] text-slate-400">Submitting an inflated price (e.g. ₹1200) tests the MAD anomaly filter. Remote submissions are logged as unverified.</p>
               </div>
 
               <div>
