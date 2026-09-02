@@ -239,5 +239,29 @@ export const observations: SeedObs[] = [
 
   // Azheekal Coast Wheels (P[38])
   { placeId: P[38], itemName: '1-Day Bicycle Rental',                      category: 'service', reportedPrice: 100,  isVerified: true,  daysAgo: 1 },
-  { placeId: P[38], itemName: '1-Day Bicycle Rental',                      category: 'service', reportedPrice: 250,  isVerified: false, daysAgo: 2 }
+  { placeId: P[38], itemName: '1-Day Bicycle Rental',                      category: 'service', reportedPrice: 250,  isVerified: false, daysAgo: 2 },
+
+  // ═══ BUS TIMING & FARE CARDS (KSRTC & Private Shuttles) ═══
+
+  // Vallikavu Junction Bus Stop (P[39])
+  { placeId: P[39], itemName: 'KSRTC Ordinary – Karunagappally to Kollam (Full)', category: 'transport', reportedPrice: 48, isVerified: true,  daysAgo: 2 },
+  { placeId: P[39], itemName: 'KSRTC Ordinary – Karunagappally to Kollam (Full)', category: 'transport', reportedPrice: 48, isVerified: true,  daysAgo: 4 },
+  { placeId: P[39], itemName: 'KSRTC Ordinary – Karunagappally to Kollam (Full)', category: 'transport', reportedPrice: 50, isVerified: true,  daysAgo: 6 },
+  { placeId: P[39], itemName: 'KSRTC Ordinary – Karunagappally to Kollam (Full)', category: 'transport', reportedPrice: 55, isVerified: true,  daysAgo: 8 },
+  { placeId: P[39], itemName: 'Private Shuttle – Vallikavu to Karunagappally',      category: 'transport', reportedPrice: 15, isVerified: true,  daysAgo: 1 },
+  { placeId: P[39], itemName: 'Private Shuttle – Vallikavu to Karunagappally',      category: 'transport', reportedPrice: 15, isVerified: true,  daysAgo: 3 },
+  { placeId: P[39], itemName: 'Private Shuttle – Vallikavu to Karunagappally',      category: 'transport', reportedPrice: 20, isVerified: true,  daysAgo: 5 },
+  { placeId: P[39], itemName: 'Private Shuttle – Vallikavu to Karunagappally',      category: 'transport', reportedPrice: 40, isVerified: false, daysAgo: 2 },
+
+  // Karunagappally KSRTC Bus Operating Centre (P[40])
+  { placeId: P[40], itemName: 'KSRTC Fast Passenger – Karunagappally to Kollam',    category: 'transport', reportedPrice: 60, isVerified: true,  daysAgo: 1 },
+  { placeId: P[40], itemName: 'KSRTC Fast Passenger – Karunagappally to Kollam',    category: 'transport', reportedPrice: 60, isVerified: true,  daysAgo: 4 },
+  { placeId: P[40], itemName: 'KSRTC Fast Passenger – Karunagappally to Kollam',    category: 'transport', reportedPrice: 65, isVerified: true,  daysAgo: 6 },
+  { placeId: P[40], itemName: 'KSRTC Super Fast – Karunagappally to Kollam',        category: 'transport', reportedPrice: 70, isVerified: true,  daysAgo: 2 },
+  { placeId: P[40], itemName: 'KSRTC Super Fast – Karunagappally to Kollam',        category: 'transport', reportedPrice: 70, isVerified: true,  daysAgo: 5 },
+  { placeId: P[40], itemName: 'KSRTC Super Fast – Karunagappally to Kollam',        category: 'transport', reportedPrice: 75, isVerified: true,  daysAgo: 7 },
+  { placeId: P[40], itemName: 'KSRTC Ordinary – Karunagappally to Kottarakkara',    category: 'transport', reportedPrice: 42, isVerified: true,  daysAgo: 3 },
+  { placeId: P[40], itemName: 'KSRTC Ordinary – Karunagappally to Kottarakkara',    category: 'transport', reportedPrice: 42, isVerified: true,  daysAgo: 6 },
+  { placeId: P[40], itemName: 'KSRTC Ordinary – Karunagappally to Kottarakkara',    category: 'transport', reportedPrice: 45, isVerified: true,  daysAgo: 8 },
+  { placeId: P[40], itemName: 'Private Shuttle – Festival Night Return (Non-token)', category: 'transport', reportedPrice: 100, isVerified: false, daysAgo: 1 }
 ];

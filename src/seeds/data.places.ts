@@ -75,5 +75,9 @@ export const places: SeedPlace[] = [
   { id: '11111111-1111-1111-1111-111111111136', name: 'Vavvakkavu Bike Point',             entityType: 'HOTEL',      lat: 9.0875, lng: 76.5305, address: 'NH 66, Vavvakkavu, Kerala',                        verificationStatus: 'VERIFIED' },
   { id: '11111111-1111-1111-1111-111111111137', name: 'Amritapuri Student Scooters',       entityType: 'HOTEL',      lat: 9.0901, lng: 76.5166, address: 'Amritapuri Gate 1, Vallikavu, Kerala',           verificationStatus: 'VERIFIED' },
   { id: '11111111-1111-1111-1111-111111111138', name: 'Clappana Ride Rentals',             entityType: 'HOTEL',      lat: 9.0820, lng: 76.5280, address: 'Clappana Junction, Kerala',                        verificationStatus: 'VERIFIED' },
-  { id: '11111111-1111-1111-1111-111111111139', name: 'Azheekal Coast Wheels',             entityType: 'HOTEL',      lat: 9.0782, lng: 76.5142, address: 'Azheekal Beach Road, Kerala',                     verificationStatus: 'VERIFIED' }
+  { id: '11111111-1111-1111-1111-111111111139', name: 'Azheekal Coast Wheels',             entityType: 'HOTEL',      lat: 9.0782, lng: 76.5142, address: 'Azheekal Beach Road, Kerala',                     verificationStatus: 'VERIFIED' },
+
+  // ═══ BUS STOPS & KSRTC (seeded TRANSPORT backend type) ═══
+  { id: '11111111-1111-1111-1111-111111111140', name: 'Vallikavu Junction Bus Stop',             entityType: 'TRANSPORT', lat: 9.0915, lng: 76.5186, address: 'Vallikavu Bridge Jn, Clappana P.O, Kerala 690546',    verificationStatus: 'VERIFIED' },
+  { id: '11111111-1111-1111-1111-111111111141', name: 'Karunagappally KSRTC Bus Operating Centre', entityType: 'TRANSPORT', lat: 9.0540, lng: 76.5365, address: 'KSRTC Bus Stand Rd, Karunagappally, Kerala 690518',    verificationStatus: 'VERIFIED' }
 ];

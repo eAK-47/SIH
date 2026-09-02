@@ -279,5 +279,21 @@ export const profiles: SeedProfile[] = [
     confidenceLevel: 84,
     positiveHighlights: ['Standard coastal beach-route bicycle rate'],
     thingsToKnow: ['Sunset-peak tourist markups up to ₹250 reported; check the counter rate during peak hours (2 reports)']
+  },
+
+  // ═══ BUS TIMING & FARE CARDS (KSRTC & Private Shuttles) ═══
+  {
+    placeId: '11111111-1111-1111-1111-111111111140', // P[39] Vallikavu Junction Bus Stop
+    safetyScore: 88,
+    confidenceLevel: 90,
+    positiveHighlights: ['First KSRTC ordinary to Karunagappally from 05:40 AM (~every 20–30 min until 9 PM)', 'Vallikavu–Karunagappally private shuttle ₹15 official counter rate'],
+    thingsToKnow: ['KSRTC full-ticket to Kollam ~₹48; boarding without token at festival night may be quoted up to ₹100 (3 reports)', 'No service after 10:00 PM on this stretch except private maxi during festival days']
+  },
+  {
+    placeId: '11111111-1111-1111-1111-111111111141', // P[40] Karunagappally KSRTC Bus Operating Centre
+    safetyScore: 90,
+    confidenceLevel: 92,
+    positiveHighlights: ['KSRTC Operating Centre with Fast Passenger and Super Fast services to Kollam', 'First departure 05:15 AM; last local service 09:30 PM'],
+    thingsToKnow: ['Super Fast to Kollam ~₹70 and Fast Passenger ~₹60 — always buy the token at the KSRTC counter, not agents (2 reports)', 'Festival-night return shuttles occasionally quote non-token rates up to ₹100; ask for the printed fare card']
   }
 ];

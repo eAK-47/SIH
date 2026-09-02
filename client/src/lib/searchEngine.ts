@@ -46,6 +46,16 @@ const SYNONYMS: Record<string, string[]> = {
   beach: ['azheekal', 'sea', 'harbour'],
   stand: ['junction', 'auto', 'transport'],
 
+  // ─── Bus & transit ───
+  bus: ['ksrtc', 'shuttle', 'stop', 'stand'],
+  ksrtc: ['bus', 'service', 'centre'],
+  shuttle: ['bus', 'maxi', 'private'],
+  timetable: ['timing', 'schedule', 'bus'],
+  schedule: ['timing', 'timetable', 'bus'],
+  fare: ['ticket', 'token', 'price', 'rate'],
+  kollam: ['ksrtc', 'bus', 'karunagappally'],
+  karunagappally: ['bus', 'ksrtc', 'station', 'railway', 'hospital'],
+
   // ─── Rentals ───
   activa: ['scooter', 'rental', 'bike', 'honda'],
   jupiter: ['scooter', 'tvs', 'rental'],
@@ -75,7 +85,8 @@ const SYNONYMS: Record<string, string[]> = {
   abhyangam: ['panchakarma', 'ayurveda', 'therapy'],
   op: ['consultation', 'ticket', 'doctor', 'outpatient'],
   outpatient: ['op', 'consultation', 'doctor'],
-  ticket: ['op', 'fee', 'token', 'consultation'],
+  ticket: ['op', 'fee', 'token', 'consultation', 'fare', 'bus'],
+  token: ['ticket', 'fare', 'bus'],
   consultation: ['doctor', 'op', 'specialist'],
   doctor: ['consultation', 'op', 'specialist', 'medical'],
   casualty: ['emergency', 'assessment', 'registration'],
