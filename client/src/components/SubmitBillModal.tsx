@@ -5,7 +5,7 @@ import { submitPrice, verifyPop } from '../lib/api';
 import { parseReceiptText, preprocessReceiptImage, type ParsedReceipt } from '../lib/receiptParser';
 import { useAppStore } from '../store/useAppStore';
 import { StarRating } from './StarRating';
-import { Loader2, X, MapPin, CheckCircle, AlertTriangle, ScanLine, Camera, Image as ImageIcon, FileText } from 'lucide-react';
+import { Loader2, X, MapPin, CheckCircle, AlertTriangle, ScanLine, Camera, Image as ImageIcon, FileText, Lock } from 'lucide-react';
 
 /** Promise-wrapped FileReader → data URL (typed, no `any`). */
 function fileToDataUrl(file: File): Promise<string> {
@@ -44,6 +44,20 @@ export function SubmitBillModal({ placeId, placeName, onClose }: { placeId: stri
   // Submit state
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  // Submit button lock state — always render the button; never unmount it.
+  // A clear reason string tells the user exactly why submission is locked.
+  const isScanning = scanBusy;
+  const hasRequiredFields = Boolean(itemName.trim()) && Boolean(price.trim()) && Number(price) > 0;
+  const hasPoP = Boolean(popToken);
+
+  const submitDisabledReason = isScanning
+    ? 'Scanning receipt…'
+    : !hasPoP
+    ? 'Stamp GPS location first'
+    : !hasRequiredFields
+    ? 'Enter item name and amount'
+    : null; // null = enabled
 
   async function handleStampGps() {
     setPopLoading(true);
@@ -367,12 +381,27 @@ export function SubmitBillModal({ placeId, placeName, onClose }: { placeId: stri
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-              <button type="button" onClick={onClose} className="rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">Cancel</button>
-              <button type="submit" disabled={submitLoading || !itemName || !price || !popToken} className="flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 disabled:opacity-50">
-                {submitLoading && <Loader2 className="h-4 w-4 animate-spin"/>}
-                Submit & Recalculate Band
-              </button>
+            {/* Footer always renders — the submit button is NEVER conditionally unmounted */}
+            <div className="mt-6 flex flex-col gap-2 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3">
+                <button type="button" onClick={onClose} className="rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">Cancel</button>
+                <button
+                  type="submit"
+                  disabled={submitDisabledReason != null}
+                  title={submitDisabledReason ?? undefined}
+                  className={`flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold transition ${
+                    submitDisabledReason != null
+                      ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                      : 'bg-brand-600 text-white hover:bg-brand-700'
+                  }`}
+                >
+                  {submitDisabledReason != null ? <Lock className="h-4 w-4" /> : submitLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  {submitDisabledReason ?? (submitLoading ? 'Submitting…' : 'Submit & Recalculate Band')}
+                </button>
+              </div>
+              {submitDisabledReason != null && (
+                <p className="text-right text-[11px] font-semibold text-amber-600">🔒 {submitDisabledReason}</p>
+              )}
             </div>
           </form>
         )}
