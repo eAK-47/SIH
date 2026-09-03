@@ -159,3 +159,111 @@ Recent: ${JSON.stringify(context.recentTouristComments || [])}`;
     return fallbackAdvisory();
   }
 }
+
+export interface ChatContextEntry {
+  name: string;
+  category: string;
+  distanceMeters?: number;
+  verificationStatus: string;
+  safetyScore?: number;
+  fairPriceBands?: {
+    itemName: string;
+    category: string;
+    lowerBound: number;
+    upperBound: number;
+    median: number;
+    observationCount: number;
+    outlierCount: number;
+  }[];
+  thingsToKnow?: string[];
+}
+
+export interface ChatContext {
+  query?: string;
+  userLat: number;
+  userLng: number;
+  places: ChatContextEntry[];
+}
+
+/**
+ * Deterministic offline fallback for the tourist chatbot.
+ * Grounds the reply in the verified local context (places, fair-price bands,
+ * safety scores, advisories) so the endpoint never 500s when no LLM key exists.
+ */
+function fallbackChatReply(message: string, context: ChatContext, language: string): string {
+  const places = context.places || [];
+  const parts: string[] = [];
+
+  if (places.length === 0) {
+    return language.toLowerCase().startsWith('hi')
+      ? 'क्षमा करें, आपके पास कोई स्थानीय स्थान नहीं मिला। कोई और शब्द आज़माएँ।'
+      : 'Sorry, no local places found near you right now. Try a different area.';
+  }
+
+  for (const p of places.slice(0, 3)) {
+    const band = p.fairPriceBands && p.fairPriceBands[0];
+    const line = [
+      p.name,
+      `(${p.category})`,
+      p.verificationStatus ? `status ${p.verificationStatus.toLowerCase()}` : null,
+      p.safetyScore != null ? `safety ${p.safetyScore}/100` : null,
+    ].filter(Boolean).join(' ');
+    parts.push(line);
+
+    if (band) {
+      parts.push(`  • ${band.itemName}: ₹${band.lowerBound}–₹${band.upperBound}` +
+        (band.outlierCount ? ` (${band.outlierCount} spike flagged)` : ''));
+    }
+  }
+
+  const warnings = places.slice(0, 3)
+    .flatMap(p => (p.thingsToKnow || []).slice(0, 1))
+    .filter(Boolean);
+  if (warnings.length) {
+    parts.push(`Note: ${warnings.join(' | ')}`);
+  }
+
+  const langNote = language.toLowerCase().startsWith('hi')
+    ? '\n(यह उत्तर ऑफ़लाइन स्थानीय डेटा से उत्पन्न किया गया था।)'
+    : '\n(Answered from verified offline local data.)';
+
+  return parts.join('\n') + langNote;
+}
+
+/**
+ * Context-aware tourist chatbot.
+ * Uses the OmniRoute/OpenAI gateway when available, else a deterministic
+ * offline fallback grounded in the verified local context.
+ */
+export async function generateChatResponse(
+  message: string,
+  context: ChatContext,
+  language = 'en'
+): Promise<string> {
+  const systemPrompt =
+    `You are the Vallikavu Tourism Intelligence Chatbot. Answer the user's travel question using only the verified local data provided (prices, places, bus schedules). Respond directly, concisely, and in the language specified (${language}).`;
+
+  if (!openai) {
+    return fallbackChatReply(message, context, language);
+  }
+
+  try {
+    const userPrompt = `User Query: ${message} | Context Data: ${JSON.stringify(context)}`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.2,
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content || !content.trim()) return fallbackChatReply(message, context, language);
+    return content.trim();
+  } catch (error) {
+    console.warn('Chat response error, falling back to offline heuristics:', (error as Error).message);
+    return fallbackChatReply(message, context, language);
+  }
+}

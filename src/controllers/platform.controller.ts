@@ -1,8 +1,10 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../config/database';
 import { verifyPresence, generatePopToken, verifyPopToken, calculateDistance } from '../services/geo-validator.service';
-import { generateAdvisory } from '../services/ai-synthesizer.service';
+import { generateAdvisory, generateChatResponse } from '../services/ai-synthesizer.service';
 import { calculateRegulatedFare } from '../services/transit-meter.service';
+import { placeRepository } from '../repositories/place.repository';
+import { priceEngineService } from '../services/price-engine.service';
 import { z } from 'zod';
 
 const popVerifySchema = z.object({
@@ -25,6 +27,13 @@ const priceSubmitSchema = z.object({
   popToken: z.string(),
   userComment: z.string().optional(),
   photoUrl: z.string().optional(),
+});
+
+const chatQuerySchema = z.object({
+  message: z.string().min(1),
+  userLat: z.number().min(-90).max(90),
+  userLng: z.number().min(-180).max(180),
+  language: z.string().min(2).max(6).optional().default('en'),
 });
 
 export class PlatformController {
@@ -256,6 +265,63 @@ export class PlatformController {
         },
       });
     } catch (e: any) {
+      return reply.status(500).send({ success: false, error: e.message });
+    }
+  }
+
+  // 5. Tourist Chatbot Query (context-aware, grounded in nearby local data)
+  async handleChatQuery(req: FastifyRequest, reply: FastifyReply) {
+    try {
+      const data = chatQuerySchema.parse(req.body);
+      const { message, userLat, userLng, language } = data;
+
+      // Fetch surrounding places within 5km, ordered by distance (repository does ORDER BY distance_meters ASC)
+      const nearby = await placeRepository.findNearbyPlaces({
+        lat: userLat,
+        lng: userLng,
+        radiusMeters: 5000,
+      });
+
+      // Top 5 closest places, enriched with active fair-price bands + advisories
+      const top5 = nearby.slice(0, 5);
+      const contextPlaces = await Promise.all(
+        top5.map(async (place) => {
+          const observations = await placeRepository.getPriceObservations(place.id);
+          const fairPriceBands = priceEngineService.calculateFairPriceBands(observations);
+          const profile = await placeRepository.getIntelligenceProfile(place.id);
+
+          return {
+            name: place.name,
+            category: place.entityType,
+            distanceMeters: place.distanceMeters,
+            verificationStatus: place.verificationStatus,
+            safetyScore: profile ? profile.safetyScore : undefined,
+            fairPriceBands: fairPriceBands.map((b) => ({
+              itemName: b.itemName,
+              category: b.category,
+              lowerBound: b.lowerBound,
+              upperBound: b.upperBound,
+              median: b.median,
+              observationCount: b.observationCount,
+              outlierCount: b.outlierCount,
+            })),
+            thingsToKnow: profile ? profile.thingsToKnow : [],
+          };
+        })
+      );
+
+      const context = {
+        query: message,
+        userLat,
+        userLng,
+        places: contextPlaces,
+      };
+
+      const replyText = await generateChatResponse(message, context, language);
+
+      return reply.send({ success: true, reply: replyText });
+    } catch (e: any) {
+      if (e instanceof z.ZodError) return reply.status(400).send({ success: false, error: 'Validation Error' });
       return reply.status(500).send({ success: false, error: e.message });
     }
   }
