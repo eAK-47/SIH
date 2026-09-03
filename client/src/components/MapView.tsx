@@ -46,7 +46,7 @@ const userIcon = L.divIcon({
 
 function FitBounds() {
   const map = useMap();
-  const { places, userLat, userLng } = useAppStore();
+  const { places, userLat, userLng, selectedPlace } = useAppStore();
 
   useEffect(() => {
     if (places.length === 0) {
@@ -59,6 +59,13 @@ function FitBounds() {
     ]);
     map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
   }, [places, userLat, userLng, map]);
+
+  // Pan to the selected place (e.g. chat "View on Map" chip) with a fly animation
+  useEffect(() => {
+    if (selectedPlace) {
+      map.flyTo([selectedPlace.latitude, selectedPlace.longitude], 16, { duration: 0.8 });
+    }
+  }, [selectedPlace?.id, map]);
 
   return null;
 }

@@ -10,19 +10,18 @@ interface ChatMsg {
   text: string;
 }
 
-/** Extract places mentioned in a bot reply and build a Google Maps deep-link. */
-function getReplyMapLinks(reply: string, allPlaces: any[], userLat: number, userLng: number) {
+/**
+ * Extract places whose FULL name appears in a bot reply (no first-word false
+ * positives), longest names first. Returns the place objects so the UI can
+ * focus them on the in-app Leaflet map instead of opening Google Maps.
+ */
+function getReplyMapLinks(reply: string, allPlaces: any[]) {
   if (!reply || !allPlaces?.length) return [];
-  const links: { name: string; url: string }[] = [];
-  for (const p of allPlaces) {
-    if (!p?.name) continue;
-    if (reply.toLowerCase().includes(p.name.toLowerCase().split(' ')[0].toLowerCase())) {
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${p.latitude},${p.longitude}`;
-      links.push({ name: p.name, url });
-      if (links.length >= 3) break;
-    }
-  }
-  return links;
+  const lower = reply.toLowerCase();
+  return allPlaces
+    .filter(p => p?.name && lower.includes(p.name.toLowerCase()))
+    .sort((a, b) => b.name.length - a.name.length)
+    .slice(0, 3);
 }
 
 export function VoiceChatModal() {
@@ -30,6 +29,8 @@ export function VoiceChatModal() {
   const userLat = useAppStore((s: any) => s.userLat);
   const userLng = useAppStore((s: any) => s.userLng);
   const places = useAppStore((s: any) => s.places);
+  const setSelectedPlace = useAppStore((s: any) => s.setSelectedPlace);
+  const setActiveTab = useAppStore((s: any) => s.setActiveTab);
 
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<ChatMsg[]>([{ role: 'bot', text: t('chat.botGreeting') }]);
@@ -160,18 +161,20 @@ export function VoiceChatModal() {
                   <div className="flex items-start gap-1.5">
                     <div className="rounded-2xl rounded-bl-sm bg-white px-3 py-2 text-sm text-slate-800 shadow-sm">
                       <p className="whitespace-pre-wrap">{m.text}</p>
-                      {/* Map deep-link chips for places mentioned in the reply */}
+                      {/* In-app map focus chips for places mentioned in the reply */}
                       <div className="mt-1.5 flex flex-wrap gap-1">
-                        {getReplyMapLinks(m.text, places, userLat, userLng).map(({ name, url }) => (
-                          <a
-                            key={url}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        {getReplyMapLinks(m.text, places).map((p: any) => (
+                          <button
+                            key={p.id}
+                            onClick={() => {
+                              setSelectedPlace(p);
+                              setActiveTab('tourist');
+                              setOpen(false);
+                            }}
                             className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700 transition hover:bg-brand-100"
                           >
-                            📍 {name} · {t('chat.viewOnMap')}
-                          </a>
+                            📍 {p.name} · {t('chat.viewOnMap')}
+                          </button>
                         ))}
                       </div>
                     </div>
