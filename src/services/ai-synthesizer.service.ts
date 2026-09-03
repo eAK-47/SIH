@@ -183,16 +183,31 @@ export interface ChatContext {
   userLat: number;
   userLng: number;
   places: ChatContextEntry[];
+  fareAudit?: {
+    destination?: string;
+    distanceKm: number;
+    durationMinutes: number;
+    standardMeterFare: number;
+    nightMeterFare: number;
+    isGoogleLiveRouted: boolean;
+    note?: string;
+  } | null;
 }
 
 /**
  * Deterministic offline fallback for the tourist chatbot.
- * Grounds the reply in the verified local context (places, fair-price bands,
- * safety scores, advisories) so the endpoint never 500s when no LLM key exists.
+ * Emits terse, non-boilerplate answers grounded in the verified local context
+ * (places, fair-price bands, safety scores, advisories, optional fare audit).
  */
 function fallbackChatReply(message: string, context: ChatContext, language: string): string {
   const places = context.places || [];
   const parts: string[] = [];
+
+  if (context.fareAudit) {
+    const f = context.fareAudit;
+    parts.push(`🚖 ${f.destination}: ₹${f.standardMeterFare} day / ₹${f.nightMeterFare} night (${f.distanceKm} km, ~${f.durationMinutes} min)`);
+    parts.push('');
+  }
 
   if (places.length === 0) {
     return language.toLowerCase().startsWith('hi')
@@ -202,17 +217,11 @@ function fallbackChatReply(message: string, context: ChatContext, language: stri
 
   for (const p of places.slice(0, 3)) {
     const band = p.fairPriceBands && p.fairPriceBands[0];
-    const line = [
-      p.name,
-      `(${p.category})`,
-      p.verificationStatus ? `status ${p.verificationStatus.toLowerCase()}` : null,
-      p.safetyScore != null ? `safety ${p.safetyScore}/100` : null,
-    ].filter(Boolean).join(' ');
+    const line = [p.name, `(${p.category})`].filter(Boolean).join(' ');
     parts.push(line);
-
     if (band) {
-      parts.push(`  • ${band.itemName}: ₹${band.lowerBound}–₹${band.upperBound}` +
-        (band.outlierCount ? ` (${band.outlierCount} spike flagged)` : ''));
+      parts.push(`• ${band.itemName}: ₹${band.lowerBound}–₹${band.upperBound}` +
+        (band.outlierCount ? ` (⚠ ${band.outlierCount} spike)` : ''));
     }
   }
 
@@ -223,11 +232,7 @@ function fallbackChatReply(message: string, context: ChatContext, language: stri
     parts.push(`Note: ${warnings.join(' | ')}`);
   }
 
-  const langNote = language.toLowerCase().startsWith('hi')
-    ? '\n(यह उत्तर ऑफ़लाइन स्थानीय डेटा से उत्पन्न किया गया था।)'
-    : '\n(Answered from verified offline local data.)';
-
-  return parts.join('\n') + langNote;
+  return parts.join('\n');
 }
 
 /**

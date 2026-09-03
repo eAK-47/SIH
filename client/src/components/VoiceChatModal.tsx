@@ -10,10 +10,26 @@ interface ChatMsg {
   text: string;
 }
 
+/** Extract places mentioned in a bot reply and build a Google Maps deep-link. */
+function getReplyMapLinks(reply: string, allPlaces: any[], userLat: number, userLng: number) {
+  if (!reply || !allPlaces?.length) return [];
+  const links: { name: string; url: string }[] = [];
+  for (const p of allPlaces) {
+    if (!p?.name) continue;
+    if (reply.toLowerCase().includes(p.name.toLowerCase().split(' ')[0].toLowerCase())) {
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${p.latitude},${p.longitude}`;
+      links.push({ name: p.name, url });
+      if (links.length >= 3) break;
+    }
+  }
+  return links;
+}
+
 export function VoiceChatModal() {
   const { t, i18n } = useTranslation();
   const userLat = useAppStore((s: any) => s.userLat);
   const userLng = useAppStore((s: any) => s.userLng);
+  const places = useAppStore((s: any) => s.places);
 
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<ChatMsg[]>([{ role: 'bot', text: t('chat.botGreeting') }]);
@@ -144,6 +160,20 @@ export function VoiceChatModal() {
                   <div className="flex items-start gap-1.5">
                     <div className="rounded-2xl rounded-bl-sm bg-white px-3 py-2 text-sm text-slate-800 shadow-sm">
                       <p className="whitespace-pre-wrap">{m.text}</p>
+                      {/* Map deep-link chips for places mentioned in the reply */}
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {getReplyMapLinks(m.text, places, userLat, userLng).map(({ name, url }) => (
+                          <a
+                            key={url}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700 transition hover:bg-brand-100"
+                          >
+                            📍 {name} · {t('chat.viewOnMap')}
+                          </a>
+                        ))}
+                      </div>
                     </div>
                     <button
                       onClick={() => (speaking ? stopSpeak() : speak(m.text))}

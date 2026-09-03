@@ -274,16 +274,64 @@ export class PlatformController {
     try {
       const data = chatQuerySchema.parse(req.body);
       const { message, userLat, userLng, language } = data;
+      const msgLower = message.toLowerCase();
 
-      // Fetch surrounding places within 5km, ordered by distance (repository does ORDER BY distance_meters ASC)
+      // ─── Task 2: Strict Intent & Category Detection ───
+      const isFoodQuery = /(food|eat|restaurant|hotel|biriyani|sadya|meals|porotta|tea|coffee|breakfast|lunch|dinner|dosa|കഴിക്കാൻ|ഭക്ഷണം|ബിരിയാണി|ചോറ്|खाना|होटल|भोजन)/i.test(msgLower);
+      const isTransportQuery = /(auto|bus|taxi|cab|train|station|route|timing|schedule|fare|drop|meter|യാത്ര|ഓട്ടോ|ബസ്|കിരായം|നിരക്ക്|किराया|ऑटो|बस)/i.test(msgLower);
+      const isMedicalQuery = /(hospital|doctor|clinic|ayurveda|panchakarma|medicine|casualty|emergency|ആശുപത്രി|ഡോക്ടർ|ചികിത്സ|अस्पताल|डॉक्टर|दवा)/i.test(msgLower);
+      const isBusQuery = /(bus|ksrtc|shuttle|timing|schedule)/i.test(msgLower);
+
+      // Fetch surrounding places within 5km, ordered by distance
       const nearby = await placeRepository.findNearbyPlaces({
         lat: userLat,
         lng: userLng,
         radiusMeters: 5000,
       });
 
-      // Top 5 closest places, enriched with active fair-price bands + advisories
-      const top5 = nearby.slice(0, 5);
+      // Strict category filtering to prevent cross-category contamination
+      let targetedPlaces = nearby;
+      const isMedicalPlace = (p: any) => /hospital|ayurveda|clinic|medical|wellness/i.test(p.name || '');
+      if (isFoodQuery && !isTransportQuery) {
+        targetedPlaces = nearby.filter((p) => p.entityType === 'RESTAURANT');
+      } else if (isTransportQuery && !isFoodQuery) {
+        targetedPlaces = nearby.filter((p) => p.entityType === 'TRANSPORT');
+      } else if (isMedicalQuery) {
+        // HOTEL in this codebase also holds rentals — disambiguate by name pattern
+        targetedPlaces = nearby.filter((p) => p.entityType === 'HOTEL' && isMedicalPlace(p));
+      }
+
+      // Expand bus query to include all bus stops even if beyond top-5
+      if (isBusQuery) {
+        const busPlaces = nearby.filter((p) => /bus|ksrtc/i.test(p.name));
+        if (busPlaces.length) targetedPlaces = busPlaces;
+      }
+
+      // ─── Task 3/4: Real-time fare-audit for auto/taxi destination queries ───
+      let fareAudit: any = null;
+      const knownDestinations: Record<string, { lat: number; lng: number }> = {
+        'karunagappally': { lat: 9.0544, lng: 76.5338 },
+        'railway station': { lat: 9.0544, lng: 76.5338 },
+        'ochira': { lat: 9.1311, lng: 76.5089 },
+        'azheekal': { lat: 9.1245, lng: 76.4851 },
+        'kollam': { lat: 8.8879, lng: 76.5955 },
+        'beach': { lat: 9.1245, lng: 76.4851 },
+      };
+      const destKey = Object.keys(knownDestinations).find((k) => msgLower.includes(k));
+      if (destKey) {
+        const dest = knownDestinations[destKey];
+        try {
+          const fareDetails = await calculateRegulatedFare(userLat, userLng, dest.lat, dest.lng);
+          fareAudit = {
+            destination: destKey,
+            ...fareDetails,
+            note: 'Kerala MVD regulated auto estimate (min ₹30/1.5km, ₹15/km beyond, night 1.5×)',
+          };
+        } catch { /* ignore — fall back to price-band context */ }
+      }
+
+      // Top 5 closest places (or bus-expanded), enriched with bands + advisories
+      const top5 = targetedPlaces.slice(0, 5);
       const contextPlaces = await Promise.all(
         top5.map(async (place) => {
           const observations = await placeRepository.getPriceObservations(place.id);
@@ -315,6 +363,7 @@ export class PlatformController {
         userLat,
         userLng,
         places: contextPlaces,
+        fareAudit,
       };
 
       const replyText = await generateChatResponse(message, context, language);
