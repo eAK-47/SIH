@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import 'clsx';
 import { useTranslation } from 'react-i18next';
 import { submitPrice, verifyPop } from '../lib/api';
-import { parseReceiptText, preprocessReceiptImage } from '../lib/receiptParser';
+import { parseReceiptText, preprocessReceiptImage, type ParsedReceipt } from '../lib/receiptParser';
 import { useAppStore } from '../store/useAppStore';
 import { StarRating } from './StarRating';
 import { Loader2, X, MapPin, CheckCircle, AlertTriangle, ScanLine, Camera, Image as ImageIcon, FileText } from 'lucide-react';
@@ -31,6 +31,8 @@ export function SubmitBillModal({ placeId, placeName, onClose }: { placeId: stri
   const [scanProgress, setScanProgress] = useState<number | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
   const [rawOcrText, setRawOcrText] = useState<string | null>(null);
+  const [parsedReceipt, setParsedReceipt] = useState<ParsedReceipt | null>(null);
+  const [selectedScannedItem, setSelectedScannedItem] = useState<string | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
   
@@ -73,6 +75,8 @@ export function SubmitBillModal({ placeId, placeName, onClose }: { placeId: stri
     setScanProgress(null);
     setScanError(null);
     setRawOcrText(null);
+    setParsedReceipt(null);
+    setSelectedScannedItem(null);
     try {
       const dataUrl = await fileToDataUrl(file);
       const processed = await preprocessReceiptImage(dataUrl);
@@ -98,14 +102,20 @@ export function SubmitBillModal({ placeId, placeName, onClose }: { placeId: stri
 
       const parsed = parseReceiptText(ocrText, knownItems);
       setRawOcrText(parsed.rawText);
+      setParsedReceipt(parsed);
 
       let populated = false;
-      if (parsed.price != null) {
-        setPrice(String(parsed.price));
+      if (parsed.grandTotal != null) {
+        // Requirement: always default to the TRUE post-tax grand total
+        setPrice(String(parsed.grandTotal));
+        setSelectedScannedItem(null); // null = full-bill-total mode
         populated = true;
       }
-      if (parsed.detectedItem) {
-        setItemName(parsed.detectedItem);
+      if (parsed.primaryItem) {
+        setItemName(parsed.primaryItem);
+        populated = true;
+      } else if (parsed.detectedItems.length > 0) {
+        setItemName(parsed.detectedItems[0].name);
         populated = true;
       }
       if (!populated) {
@@ -241,6 +251,77 @@ export function SubmitBillModal({ placeId, placeName, onClose }: { placeId: stri
                 <p className="mt-2 flex items-center gap-1 text-[11px] font-semibold text-amber-700">
                   <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> {scanError}
                 </p>
+              )}
+
+              {scanError && (
+                <p className="mt-2 flex items-center gap-1 text-[11px] font-semibold text-amber-700">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> {scanError}
+                </p>
+              )}
+
+              {/* Parsed receipt summary with grand total + selectable line items */}
+              {parsedReceipt && (
+                <div className="mt-2 overflow-hidden rounded-xl border border-brand-200 bg-brand-50/60">
+                  <div className="flex items-end justify-between px-3 pt-2.5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-brand-700">{t('scanner.grandTotal')}</p>
+                    {parsedReceipt.taxAmount != null && parsedReceipt.taxAmount > 0 && (
+                      <p className="text-[10px] font-semibold text-brand-600">
+                        {t('scanner.tax')}: ₹{parsedReceipt.taxAmount}
+                      </p>
+                    )}
+                  </div>
+                  <p className="px-3 pb-1 text-2xl font-bold font-numeric text-slate-900">
+                    ₹{parsedReceipt.grandTotal ?? '—'}
+                  </p>
+                  {parsedReceipt.subTotal != null && (
+                    <p className="px-3 pb-2 text-[11px] font-semibold text-slate-500">{t('scanner.subTotal')}: ₹{parsedReceipt.subTotal}</p>
+                  )}
+
+                  {parsedReceipt.detectedItems.length > 0 && (
+                    <div className="border-t border-brand-200 bg-white px-3 py-2">
+                      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('scanner.pickItem')}</p>
+                      <div className="flex flex-col gap-1">
+                        {parsedReceipt.detectedItems.map((item) => {
+                          const active = selectedScannedItem === item.name;
+                          return (
+                            <button
+                              key={item.name}
+                              type="button"
+                              onClick={() => {
+                                setSelectedScannedItem(item.name);
+                                setItemName(item.name);
+                                if (item.price != null) setPrice(String(item.price));
+                              }}
+                              className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition ${
+                                active ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                              }`}
+                            >
+                              <span className="font-semibold text-left">{item.name}</span>
+                              {item.price != null && <span className="font-numeric">₹{item.price}</span>}
+                            </button>
+                          );
+                        })}
+                        {parsedReceipt.grandTotal != null && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedScannedItem(null);
+                              setPrice(String(parsedReceipt.grandTotal));
+                            }}
+                            className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition ${
+                              selectedScannedItem == null && price === String(parsedReceipt.grandTotal)
+                                ? 'bg-brand-600 text-white'
+                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                            }`}
+                          >
+                            <span className="font-semibold">{t('scanner.useFullTotal')}</span>
+                            <span className="font-numeric">₹{parsedReceipt.grandTotal}</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
 
               {rawOcrText && (

@@ -1,6 +1,14 @@
-export interface ParsedReceipt {
+export interface ScannedLineItem {
+  name: string;
   price?: number;
-  detectedItem?: string;
+}
+
+export interface ParsedReceipt {
+  grandTotal?: number;
+  subTotal?: number;
+  taxAmount?: number;
+  detectedItems: ScannedLineItem[];
+  primaryItem?: string;
   rawText: string;
 }
 
@@ -74,67 +82,144 @@ export async function preprocessReceiptImage(dataUrl: string): Promise<string> {
 }
 
 /**
- * Parses raw OCR text using reverse-scanning heuristics to extract the bill total
- * and match known menu items or services for the active place.
+ * Normalizes noisy OCR line text by removing trailing dots, slashes, and artifacts.
  */
+function cleanLineText(line: string): string {
+  return line.replace(/[^\w\s₹.,/-]/g, '').trim();
+}
+
 export function parseReceiptText(text: string, knownItems: string[] = []): ParsedReceipt {
   const lines = text
     .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean);
+    .map(cleanLineText)
+    .filter((l) => l.length > 2);
 
-  let detectedPrice: number | undefined;
-  let detectedItem: string | undefined;
+  let grandTotal: number | undefined;
+  let subTotal: number | undefined;
+  let cgst: number | undefined;
+  let sgst: number | undefined;
+  const detectedItems: ScannedLineItem[] = [];
 
-  // 1. Match explicit Total / Net / Bill summary keywords
-  const totalKeywordsRegex = /(?:total|grand\s*total|net\s*amt|amount|net|subtotal|balance|payable|inr|rs\.?|₹)[\s:]*([0-9]+(?:\.[0-9]{1,2})?)/i;
-  const currencySymbolRegex = /(?:rs\.?|₹)\s*([0-9]+(?:\.[0-9]{1,2})?)/i;
+  // 1. Regex Matchers
+  // Priority 1: True post-tax bottom-line terms
+  const finalPayableRegex = /(?:grand\s*total|net\s*payable|total\s*payable|net\s*amount|bill\s*amount|round\s*off\s*total|amount\s*payable)[\s:=]*[₹rs.]*[\s]*([0-9]+(?:\.[0-9]{1,2})?)/i;
 
-  // Reverse scan from the bottom line where receipt totals are traditionally printed
+  // Priority 2: Pre-tax subtotal
+  const subTotalRegex = /(?:sub\s*total|subtotal|food\s*total)[\s:=]*[₹rs.]*[\s]*([0-9]+(?:\.[0-9]{1,2})?)/i;
+
+  // Taxes: CGST / SGST / GST
+  // Hardening: lazy prefix ensures the capture grabs the LAST number on the line
+  // (the actual tax amount, not the percentage value like "2.5%").
+  const cgstRegex = /(?:cgst|central\s*gst).*?([0-9]+(?:\.[0-9]{1,2})?)\s*$/i;
+  const sgstRegex = /(?:sgst|state\s*gst).*?([0-9]+(?:\.[0-9]{1,2})?)\s*$/i;
+  const genericTotalRegex = /(?:^|\s)(?:total|amt|balance)[\s:=]*[₹rs.]*[\s]*([0-9]+(?:\.[0-9]{1,2})?)/i;
+
+  // Scan lines from bottom to top for settlement figures
   for (let i = lines.length - 1; i >= 0; i--) {
     const line = lines[i];
-    const match = line.match(totalKeywordsRegex) || line.match(currencySymbolRegex);
-    if (match && match[1]) {
-      const val = parseFloat(match[1]);
-      if (val > 10 && val < 50000) {
-        detectedPrice = Math.round(val);
-        break;
+
+    if (grandTotal === undefined) {
+      const finalMatch = line.match(finalPayableRegex);
+      if (finalMatch && finalMatch[1]) {
+        grandTotal = Math.round(parseFloat(finalMatch[1]));
       }
+    }
+
+    if (subTotal === undefined) {
+      const subMatch = line.match(subTotalRegex);
+      if (subMatch && subMatch[1]) {
+        subTotal = Math.round(parseFloat(subMatch[1]));
+      }
+    }
+
+    if (cgst === undefined) {
+      const cMatch = line.match(cgstRegex);
+      if (cMatch && cMatch[1]) cgst = parseFloat(cMatch[1]);
+    }
+    if (sgst === undefined) {
+      const sMatch = line.match(sgstRegex);
+      if (sMatch && sMatch[1]) sgst = parseFloat(sMatch[1]);
     }
   }
 
-  // 2. Fallback heuristic: Extract standalone numbers if explicit labels were missed
-  if (!detectedPrice) {
-    const candidateNumbers: number[] = [];
-    const numRegex = /\b([0-9]{2,5}(?:\.[0-9]{2})?)\b/g;
-
-    for (const line of lines) {
-      let match;
-      while ((match = numRegex.exec(line)) !== null) {
-        const val = parseFloat(match[1]);
-        // Discard year fragments (2024-2026) and minute/hour patterns
-        if (val > 20 && val < 25000 && val !== 2024 && val !== 2025 && val !== 2026) {
-          candidateNumbers.push(Math.round(val));
+  // Fallback 1: If no explicit 'Grand Total' found, check generic 'Total'
+  if (grandTotal === undefined) {
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const line = lines[i];
+      // Avoid matching 'sub total' as generic total
+      if (!subTotalRegex.test(line)) {
+        const m = line.match(genericTotalRegex);
+        if (m && m[1]) {
+          const val = Math.round(parseFloat(m[1]));
+          if (val > (subTotal || 0)) {
+            grandTotal = val;
+            break;
+          }
         }
       }
     }
-    if (candidateNumbers.length > 0) {
-      detectedPrice = Math.max(...candidateNumbers);
+  }
+
+  // Fallback 2: Calculate SubTotal + Taxes if Grand Total line was torn/faded
+  if (grandTotal === undefined && subTotal !== undefined) {
+    const taxes = (cgst || 0) + (sgst || 0);
+    grandTotal = Math.round(subTotal + taxes);
+  }
+
+  // Fallback 3: Pick the maximum plausible number from the bill
+  if (grandTotal === undefined) {
+    const numbers: number[] = [];
+    const numRegex = /\b([0-9]{2,5}(?:\.[0-9]{2})?)\b/g;
+    for (const l of lines) {
+      let m;
+      while ((m = numRegex.exec(l)) !== null) {
+        const v = parseFloat(m[1]);
+        if (v > 20 && v < 25000 && v !== 2024 && v !== 2025 && v !== 2026) {
+          numbers.push(Math.round(v));
+        }
+      }
+    }
+    if (numbers.length > 0) {
+      grandTotal = Math.max(...numbers);
     }
   }
 
-  // 3. Match against known place menu items or services
-  const normalizedText = text.toLowerCase();
-  for (const item of knownItems) {
-    if (normalizedText.includes(item.toLowerCase())) {
-      detectedItem = item;
-      break;
+  // 2. Extract Individual Line Items (e.g. "1 CHICKEN BIRYANI 160.00" or "POROTTA 45")
+  const lineItemRegex = /^(?:[0-9]{1,2}[\s*xX.-]+)?([a-zA-Z\s/&'-]{3,30}?)\s+([0-9]{2,4}(?:\.[0-9]{2})?)$/;
+  const ignoreKeywords = /(subtotal|total|cgst|sgst|gst|tax|cash|upi|change|balance|round|table|bill|token|date|time|welcome|fssai|phone)/i;
+
+  for (const line of lines) {
+    if (ignoreKeywords.test(line)) continue;
+
+    const match = line.match(lineItemRegex);
+    if (match) {
+      const itemName = match[1].trim();
+      const itemPrice = Math.round(parseFloat(match[2]));
+      if (itemName.length >= 3 && itemPrice > 10 && itemPrice < 5000) {
+        detectedItems.push({ name: itemName, price: itemPrice });
+      }
+    } else {
+      // Check if line matches known places' menu items
+      for (const known of knownItems) {
+        if (line.toLowerCase().includes(known.toLowerCase())) {
+          detectedItems.push({ name: known });
+          break;
+        }
+      }
     }
   }
+
+  // Deduplicate detected items
+  const uniqueItems = detectedItems.filter(
+    (item, index, self) => index === self.findIndex((t) => t.name.toLowerCase() === item.name.toLowerCase())
+  );
 
   return {
-    price: detectedPrice,
-    detectedItem,
+    grandTotal,
+    subTotal,
+    taxAmount: (cgst || 0) + (sgst || 0),
+    detectedItems: uniqueItems,
+    primaryItem: uniqueItems[0]?.name,
     rawText: text,
   };
 }
