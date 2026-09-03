@@ -1,16 +1,28 @@
-import { Search, Compass, Store, ArrowLeft, Languages, Check } from 'lucide-react';
+import { Search, Compass, Store, ArrowLeft, Languages, Check, ChevronDown, MapPin } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { GpsStatusPill } from './GpsStatusPill';
 import i18n, { SUPPORTED_LANGS } from '../lib/i18n';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const LANG_NAMES: Record<string, string> = { en: 'EN', ml: 'മലയാളം', hi: 'हिन्दी' };
 
+// Multi-hub registry — only the Kerala Pilot Corridor is live today.
+const HUBS: { id: string; label: string; status: 'ACTIVE_PILOT' | 'UPCOMING'; lat?: number; lng?: number }[] = [
+  { id: 'vallikavu', label: 'Vallikavu – Karunagappally Corridor, KL', status: 'ACTIVE_PILOT', lat: 9.0912, lng: 76.5185 },
+  { id: 'varanasi', label: 'Varanasi Ghats Circuit, UP', status: 'UPCOMING' },
+  { id: 'calangute', label: 'Calangute – Baga Belt, GA', status: 'UPCOMING' },
+];
+
 export function TopNav() {
-  const { activeTab, setActiveTab, searchQuery, setSearchQuery } = useAppStore();
+  const { activeTab, setActiveTab, searchQuery, setSearchQuery, setUserLocation } = useAppStore();
   const { t } = useTranslation();
   const [langOpen, setLangOpen] = useState(false);
+  const [hubOpen, setHubOpen] = useState(false);
+
+  useEffect(() => {
+    document.title = t('app.title');
+  }, [t]);
 
   const changeLang = (code: string) => {
     i18n.changeLanguage(code);
@@ -25,12 +37,45 @@ export function TopNav() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
             <Compass className="h-5 w-5" />
           </div>
-          <h1 className="text-[17px] font-bold tracking-tight text-slate-900 hidden md:block">{t('app.title')}</h1>
+          <div className="hidden md:flex items-center gap-2">
+            <h1 className="text-[17px] font-bold tracking-tight text-slate-900">YatraSahayi</h1>
+            <span className="rounded-full bg-brand-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-brand-700 border border-brand-200">Pilot Sandbox</span>
+          </div>
         </div>
-        <div className="hidden items-center md:flex">
-          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-            📍 Vallikavu Hub, Kollam
-          </span>
+        <div className="relative hidden md:block">
+          <button
+            onClick={() => setHubOpen(o => !o)}
+            className="flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-200"
+          >
+            📍 Vallikavu – Karunagappally Corridor, KL
+            <span className="rounded-full bg-brand-600 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-white">Active Pilot</span>
+            <ChevronDown className="h-3 w-3" />
+          </button>
+          {hubOpen && (
+            <div className="absolute left-0 top-full z-[70] mt-1.5 w-72 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+              {HUBS.map(hub => (
+                <button
+                  key={hub.id}
+                  disabled={hub.status !== 'ACTIVE_PILOT'}
+                  onClick={() => { if (hub.lat != null && hub.lng != null) setUserLocation(hub.lat, hub.lng); setHubOpen(false); }}
+                  className={`flex w-full items-start gap-2 px-3 py-2 text-left text-xs transition ${
+                    hub.status === 'ACTIVE_PILOT'
+                      ? 'text-slate-800 hover:bg-brand-50'
+                      : 'cursor-not-allowed text-slate-400'
+                  }`}
+                >
+                  <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-600" />
+                  <span className="flex-1">
+                    {hub.label}
+                    {hub.status === 'ACTIVE_PILOT'
+                      ? <span className="block text-[10px] font-bold text-brand-600">(Active Pilot)</span>
+                      : <span className="block text-[10px] text-slate-400">(Upcoming)</span>}
+                  </span>
+                  {hub.status === 'ACTIVE_PILOT' && <Check className="mt-0.5 h-3.5 w-3.5 text-brand-600" />}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -42,7 +87,7 @@ export function TopNav() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             disabled={activeTab === 'merchant'}
-            placeholder={activeTab === 'merchant' ? "Search disabled in merchant view..." : "Search biriyani, sadya, porotta, auto drop, activa, kayak, ayurveda, op ticket..."}
+            placeholder={activeTab === 'merchant' ? "Search disabled in merchant view..." : t('search.placeholder')}
             className="w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-9 pr-9 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 disabled:opacity-50"
           />
           {searchQuery && activeTab === 'tourist' && (

@@ -11,6 +11,18 @@ interface ChatMsg {
 }
 
 /**
+ * Parse an LLM/chat reply: strip the [[ACTION:SELECT_PLACE:place_id]] token
+ * from the displayed text and expose the referenced place id.
+ */
+function parseChatReply(text: string): { clean: string; actionPlaceId: string | null } {
+  const match = text.match(/\[\[ACTION:SELECT_PLACE:([0-9a-fA-F-]+)\]\]/);
+  return {
+    clean: text.replace(/\[\[ACTION:SELECT_PLACE:[0-9a-fA-F-]+\]\]/g, '').trimEnd(),
+    actionPlaceId: match ? match[1] : null,
+  };
+}
+
+/**
  * Extract places whose FULL name appears in a bot reply (no first-word false
  * positives), longest names first. Returns the place objects so the UI can
  * focus them on the in-app Leaflet map instead of opening Google Maps.
@@ -153,33 +165,55 @@ export function VoiceChatModal() {
 
           {/* Messages */}
           <div className="flex h-80 flex-col gap-2 overflow-y-auto bg-slate-50 p-3">
-            {msgs.map((m, i) => (
+            {msgs.map((m, i) => {
+              const parsed = m.role === 'bot'
+                ? parseChatReply(m.text)
+                : { clean: m.text, actionPlaceId: null as string | null };
+              const actionPlace = parsed.actionPlaceId
+                ? places.find((p: any) => p.id === parsed.actionPlaceId)
+                : null;
+              return (
               <div key={i} className={`max-w-[85%] ${m.role === 'user' ? 'self-end' : 'self-start'}`}>
                 {m.role === 'user' ? (
                   <div className="rounded-2xl rounded-br-sm bg-brand-600 px-3 py-2 text-sm text-white">{m.text}</div>
                 ) : (
                   <div className="flex items-start gap-1.5">
                     <div className="rounded-2xl rounded-bl-sm bg-white px-3 py-2 text-sm text-slate-800 shadow-sm">
-                      <p className="whitespace-pre-wrap">{m.text}</p>
-                      {/* In-app map focus chips for places mentioned in the reply */}
-                      <div className="mt-1.5 flex flex-wrap gap-1">
-                        {getReplyMapLinks(m.text, places).map((p: any) => (
-                          <button
-                            key={p.id}
-                            onClick={() => {
-                              setSelectedPlace(p);
-                              setActiveTab('tourist');
-                              setOpen(false);
-                            }}
-                            className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700 transition hover:bg-brand-100"
-                          >
-                            📍 {p.name} · {t('chat.viewOnMap')}
-                          </button>
-                        ))}
-                      </div>
+                      <p className="whitespace-pre-wrap">{parsed.clean}</p>
+                      {/* LLM-emitted action: select the recommended place on the map */}
+                      {actionPlace && (
+                        <button
+                          onClick={() => {
+                            setSelectedPlace(actionPlace);
+                            setActiveTab('tourist');
+                            setOpen(false);
+                          }}
+                          className="mt-1.5 inline-flex items-center gap-1 rounded-lg bg-brand-600 px-2.5 py-1 text-[11px] font-bold text-white transition hover:bg-brand-700"
+                        >
+                          📍 {t('chat.viewOnMap')} · {actionPlace.name}
+                        </button>
+                      )}
+                      {/* Fallback chips: places name-matched in the reply */}
+                      {!actionPlace && (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {getReplyMapLinks(parsed.clean, places).map((p: any) => (
+                            <button
+                              key={p.id}
+                              onClick={() => {
+                                setSelectedPlace(p);
+                                setActiveTab('tourist');
+                                setOpen(false);
+                              }}
+                              className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700 transition hover:bg-brand-100"
+                            >
+                              📍 {p.name} · {t('chat.viewOnMap')}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <button
-                      onClick={() => (speaking ? stopSpeak() : speak(m.text))}
+                      onClick={() => (speaking ? stopSpeak() : speak(parsed.clean))}
                       aria-label="read aloud"
                       className="mt-1 rounded-full p-1.5 text-slate-400 transition hover:bg-slate-200 hover:text-brand-600"
                     >
@@ -188,7 +222,8 @@ export function VoiceChatModal() {
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
             {busy && (
               <div className="self-start rounded-2xl rounded-bl-sm bg-white px-3 py-2 shadow-sm">
                 <div className="flex gap-1">

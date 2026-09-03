@@ -339,6 +339,7 @@ export class PlatformController {
           const profile = await placeRepository.getIntelligenceProfile(place.id);
 
           return {
+            id: place.id,
             name: place.name,
             category: place.entityType,
             distanceMeters: place.distanceMeters,

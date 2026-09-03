@@ -161,6 +161,7 @@ Recent: ${JSON.stringify(context.recentTouristComments || [])}`;
 }
 
 export interface ChatContextEntry {
+  id: string;
   name: string;
   category: string;
   distanceMeters?: number;
@@ -232,6 +233,11 @@ function fallbackChatReply(message: string, context: ChatContext, language: stri
     parts.push(`Note: ${warnings.join(' | ')}`);
   }
 
+  // Operational Rule 4: emit the select-place action for the top recommendation (offline mode included)
+  if (places[0]?.id) {
+    parts.push(`[[ACTION:SELECT_PLACE:${places[0].id}]]`);
+  }
+
   return parts.join('\n');
 }
 
@@ -246,7 +252,7 @@ export async function generateChatResponse(
   language = 'en'
 ): Promise<string> {
   const systemPrompt =
-    `You are the Vallikavu Tourism Intelligence Chatbot. Answer the user's travel question using only the verified local data provided (prices, places, bus schedules). Respond directly, concisely, and in the language specified (${language}).`;
+    `You are YatraSahayi AI, a hyper-local ground intelligence agent for verified tourist corridors across India (currently operating in the active Kerala Pilot Corridor: Vallikavu - Karunagappally).\n\nOPERATIONAL RULES:\n1. Answer ONLY what the user asked using the verified local data provided for the active GPS radius.\n2. When answering about food, recommend only food spots and their fair price bands. Do not mention transit or auto stands unless asked.\n3. Provide direct, conversational advice with typical price ranges and warnings.\n4. If recommending a specific place, append: [[ACTION:SELECT_PLACE:place_id]].\n5. DO NOT include boilerplate sign-offs like "Verified locally", "As per local data", or "Happy travels!".\n6. Respond in the requested language (${language}).`;
 
   if (!openai) {
     return fallbackChatReply(message, context, language);

@@ -16,7 +16,8 @@ export function recognitionLocale(lang: string): string {
 const resources = {
   en: {
     translation: {
-      app: { title: 'Tourism Intel' },
+      app: { title: 'YatraSahayi | Tourism Intelligence Platform' },
+      search: { placeholder: 'Search biriyani, sadya, auto routes, clinics, buses...' },
       categories: {
         all: 'All',
         transport: 'Transport',
@@ -34,7 +35,7 @@ const resources = {
         backToMap: 'Back to Map',
       },
       chat: {
-        title: 'YatraSahayi AI',
+        title: 'YatraSahayi Ground AI',
         placeholder: 'Ask about food, buses, fares, places...',
         send: 'Send',
         listening: 'Listening…',
@@ -48,7 +49,8 @@ const resources = {
   },
   ml: {
     translation: {
-      app: { title: 'ടൂറിസം ഇൻ്റലിജൻസ്' },
+      app: { title: 'യാത്രാസഹായി | ടൂറിസം ഇന്റലിജൻസ്' },
+      search: { placeholder: 'ബിരിയാണി, സദ്യ, ഓട്ടോ നിരക്ക്, ുപത്രി തിരയുക...' },
       categories: {
         all: 'എല്ലാം',
         transport: 'യാത്ര',
@@ -80,7 +82,8 @@ const resources = {
   },
   hi: {
     translation: {
-      app: { title: 'पर्यटन इंटेलिजेंस' },
+      app: { title: 'यात्रासहायक | पर्यटन इंटेलिजेंस' },
+      search: { placeholder: 'बिरयानी, भोजन, ऑटो किराया, बस, अस्पताल खोजें...' },
       categories: {
         all: 'सभी',
         transport: 'परिवहन',
