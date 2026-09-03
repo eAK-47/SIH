@@ -1,9 +1,22 @@
-import { Search, Compass, Store, ArrowLeft } from 'lucide-react';
+import { Search, Compass, Store, ArrowLeft, Languages, Check } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { GpsStatusPill } from './GpsStatusPill';
+import i18n, { SUPPORTED_LANGS } from '../lib/i18n';
+import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+
+const LANG_NAMES: Record<string, string> = { en: 'EN', ml: 'മലയാളം', hi: 'हिन्दी' };
 
 export function TopNav() {
   const { activeTab, setActiveTab, searchQuery, setSearchQuery } = useAppStore();
+  const { t } = useTranslation();
+  const [langOpen, setLangOpen] = useState(false);
+
+  const changeLang = (code: string) => {
+    i18n.changeLanguage(code);
+    setLangOpen(false);
+    document.documentElement.lang = code;
+  };
 
   return (
     <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm md:px-6">
@@ -12,7 +25,7 @@ export function TopNav() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
             <Compass className="h-5 w-5" />
           </div>
-          <h1 className="text-[17px] font-bold tracking-tight text-slate-900 hidden md:block">TOURISM INTEL</h1>
+          <h1 className="text-[17px] font-bold tracking-tight text-slate-900 hidden md:block">{t('app.title')}</h1>
         </div>
         <div className="hidden items-center md:flex">
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
@@ -46,6 +59,32 @@ export function TopNav() {
 
       <div className="flex items-center gap-3">
         <GpsStatusPill />
+
+        {/* Language Selector */}
+        <div className="relative">
+          <button
+            onClick={() => setLangOpen(o => !o)}
+            aria-label={t('chat.chooseLang')}
+            className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            <Languages className="h-4 w-4 text-slate-500" />
+            {LANG_NAMES[i18n.language] || 'EN'}
+          </button>
+          {langOpen && (
+            <div className="absolute right-0 top-full z-[70] mt-1.5 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+              {SUPPORTED_LANGS.map(code => (
+                <button
+                  key={code}
+                  onClick={() => changeLang(code)}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                >
+                  <span className="flex-1">{LANG_NAMES[code]}</span>
+                  {i18n.language === code && <Check className="h-4 w-4 text-brand-600" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         
         {activeTab === 'tourist' ? (
           <button

@@ -56,6 +56,11 @@ export interface PlaceDetailsResponse {
   data: PlaceSearchResult;
 }
 
+export interface ChatQueryResponse {
+  success: boolean;
+  reply: string;
+}
+
 export interface PriceAnalysisResponse {
   success: boolean;
   data: FairPriceBand[];

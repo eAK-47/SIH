@@ -6,6 +6,7 @@ import type {
   PopVerificationResponse,
   AdvisoryResponse,
   PriceSubmitResponse,
+  ChatQueryResponse,
 } from '../types/api';
 
 const api = axios.create({
@@ -57,5 +58,12 @@ export async function submitPrice(params: {
   reportedPrice: number; popToken: string; userComment?: string;
 }): Promise<PriceSubmitResponse> {
   const { data } = await api.post('/api/v1/platform/prices/submit', params);
+  return data;
+}
+
+export async function chatQuery(params: {
+  message: string; userLat: number; userLng: number; language?: string;
+}): Promise<ChatQueryResponse> {
+  const { data } = await api.post('/api/v1/platform/chat/query', params);
   return data;
 }

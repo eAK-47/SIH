@@ -2,18 +2,19 @@ import clsx from 'clsx';
 import type { PlaceSearchResult } from '../types/api';
 import { formatDistance, verificationBadge } from '../lib/format';
 import { useAppStore } from '../store/useAppStore';
-import { getCategoryAccent, getDisplayCategory, CATEGORY_CONFIG } from '../lib/categoryConfig';
-import { } from './SafetyBadge';
+import { getCategoryAccent, getDisplayCategory } from '../lib/categoryConfig';
+import { categoryLabel } from '../lib/i18n';
+import { useTranslation } from 'react-i18next';
 import { FairPriceBandModule } from './FairPriceBandModule';
 import { ThingsToKnow } from './ThingsToKnow';
 import { ShieldCheck, CarTaxiFront, MapPin, Plus } from 'lucide-react';
 
 export function PlaceCard({ place }: { place: PlaceSearchResult }) {
   const { selectedPlace, setSelectedPlace, setPopToken } = useAppStore();
+  const { t } = useTranslation();
   const isSelected = selectedPlace?.id === place.id;
   const badge = verificationBadge(place.verificationStatus);
   const catAccent = getCategoryAccent(place.entityType, place.name);
-  const displayCat = CATEGORY_CONFIG[getDisplayCategory(place.entityType, place.name)];
 
   const mainBand = place.fairPriceBands[0];
   const advisoryMessages = place.intelligenceProfile?.thingsToKnow || [];
@@ -35,7 +36,7 @@ export function PlaceCard({ place }: { place: PlaceSearchResult }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
             <span className={clsx('rounded-full border border-current/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider', catAccent.bg, catAccent.color)}>
-              {displayCat.label}
+              {categoryLabel(getDisplayCategory(place.entityType, place.name))}
             </span>
             {place.verificationStatus === 'VERIFIED' || place.verificationStatus === 'TRUSTED' ? (
               <span className="flex items-center gap-0.5 text-[10px] font-bold text-brand-600">
@@ -81,7 +82,7 @@ export function PlaceCard({ place }: { place: PlaceSearchResult }) {
         </span>
         <span onClick={(e) => { e.stopPropagation(); (window as any).openAddBill(place.id, place.name); }} 
               className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 transition hover:bg-slate-100">
-          <Plus className="h-3 w-3" /> Add Bill 
+          <Plus className="h-3 w-3" /> {t('buttons.addBill')} 
         </span>
         {place.entityType === 'TRANSPORT' && (
           <button onClick={(e) => { e.stopPropagation(); (window as any).openTransitMeter(place.id, place.name); }} className="flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700 transition hover:bg-blue-100 ml-2">

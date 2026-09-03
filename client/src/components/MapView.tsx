@@ -3,7 +3,8 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, Tooltip } from 'react-l
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useAppStore } from '../store/useAppStore';
-import { getDisplayCategory, CATEGORY_CONFIG } from '../lib/categoryConfig';
+import { getDisplayCategory } from '../lib/categoryConfig';
+import { categoryLabel } from '../lib/i18n';
 import { formatINR, formatDistance } from '../lib/format';
 import type { PlaceSearchResult } from '../types/api';
 
@@ -96,7 +97,7 @@ export function MapView() {
               <div className="rounded-lg border border-slate-200 bg-white p-2 shadow-card min-w-[180px]">
                 <div className="text-xs font-bold text-slate-900">{place.name}</div>
                 <div className="text-[10px] uppercase font-bold tracking-wider text-brand-600">
-                  {CATEGORY_CONFIG[getDisplayCategory(place.entityType, place.name)].label}
+                  {categoryLabel(getDisplayCategory(place.entityType, place.name))}
                 </div>
                 {place.fairPriceBands[0] && (
                   <div className="mt-1 text-[11px] font-semibold font-numeric text-slate-700">

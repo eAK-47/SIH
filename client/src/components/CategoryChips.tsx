@@ -1,13 +1,16 @@
 import { useAppStore } from '../store/useAppStore';
+import i18n from '../lib/i18n';
+
+const CATEGORIES = ['ALL', 'TRANSPORT', 'MEALS', 'BOATS', 'RENTALS', 'HOSPITALS'];
 
 export function CategoryChips() {
   const { categoryFilter, setCategoryFilter } = useAppStore();
-  const categories = ['ALL', 'TRANSPORT', 'MEALS', 'BOATS', 'RENTALS', 'HOSPITALS'];
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-      {categories.map(cat => {
+      {CATEGORIES.map(cat => {
         const isSelected = categoryFilter === cat || (!categoryFilter && cat === 'ALL');
+        const label = cat === 'ALL' ? i18n.t('categories.all') : i18n.t(`categories.${cat.toLowerCase()}`);
         return (
           <button
             key={cat}
@@ -16,7 +19,7 @@ export function CategoryChips() {
               isSelected ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            {cat.charAt(0) + cat.slice(1).toLowerCase()}
+            {label}
           </button>
         );
       })}

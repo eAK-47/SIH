@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import 'clsx';
+import { useTranslation } from 'react-i18next';
 import { submitPrice, verifyPop } from '../lib/api';
 import { useAppStore } from '../store/useAppStore';
 import { StarRating } from './StarRating';
 import { Loader2, X, MapPin, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export function SubmitBillModal({ placeId, placeName, onClose }: { placeId: string, placeName: string, onClose: () => void }) {
+  const { t } = useTranslation();
   const { userLat, userLng, popToken, setPopToken } = useAppStore();
   
   const [itemName, setItemName] = useState('');
@@ -96,7 +98,7 @@ export function SubmitBillModal({ placeId, placeName, onClose }: { placeId: stri
                 <div className="flex items-center gap-2">
                   <button type="button" onClick={handleStampGps} disabled={popLoading || popStatus === 'success'} className="flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50">
                     {popLoading ? <Loader2 className="h-3 w-3 animate-spin"/> : <MapPin className="h-3 w-3"/>}
-                    Stamp My GPS Location
+                    {t('buttons.stampGps')}
                   </button>
                 </div>
                 {popStatus === 'success' && <div className="flex items-center gap-1 text-[11px] font-bold text-brand-600"><CheckCircle className="h-3.5 w-3.5"/> Verified (&lt;150m)</div>}
