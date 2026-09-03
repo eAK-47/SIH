@@ -21,6 +21,7 @@
     "react-i18next": "^17.0.13",
     "react-leaflet": "^5.0.0",
     "tailwind-merge": "^3.6.0",
+    "tesseract.js": "^7.0.0",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
